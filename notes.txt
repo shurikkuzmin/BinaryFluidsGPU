@@ -1,0 +1,33 @@
+General structure
+-----------------
+
+1. Introduction (the most important thing) we need to do all literature and
+include all the articles - GPU without NN interaction, CUDA articles. Here to
+mention that OpenCL is still something new and can perform differently and
+then to tell the objective is to create really efficient algorithm for
+multiphase models.
+2. Lattice Boltzmann introduction. 
+3. GPU algorithms.
+4. Numerical results in terms of performance.
+5. Conclusion
+6. Acknowledgement 
+
+Shan-Chen vs. Free-energy
+-------------------------
+The models are different and include different equations of state and density
+profiles. The only two things which come to my mind are:
+1. to implement the same equation of state for both systems and to compare
+bulk densities or density profiles. There is the paper which I attached for
+reference for how to implement it with different EOSes. But I am not sure how
+to implement it with multicomponent model - they are kind of completely
+different.
+
+2. It is the well known test which is usually failed by any multicomponent
+model. If you have Poiseulle flow with different viscosities fluids and one
+rho - you have one profile, if you have the same viscosity but different rho
+there is analytical formulae to do it but many models fail. I can digg into it
+and provide with literature. The test would be as like which model performs
+better for this analytical solution. 
+
+3. The one component multiphase models can be compared for sure for the same
+equation of state.

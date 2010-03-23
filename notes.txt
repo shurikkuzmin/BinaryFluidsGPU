@@ -31,3 +31,7 @@ better for this analytical solution.
 
 3. The one component multiphase models can be compared for sure for the same
 equation of state.
+
+Also, in one of Julia's papers there is a short paragraph comparing the two
+models.  I will look it up and add it to the repo (michal).
+

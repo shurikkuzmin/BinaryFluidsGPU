@@ -1,5 +1,9 @@
 \documentclass[mathpazo]{cicp}
-
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{color}
+%\usepackage[sort]{cite}
+%\usepackage[sort&compress,authoryear,round]{natbib}
 
 %%%%% author macros %%%%%%%%%
 % place your own macros HERE
@@ -9,7 +13,7 @@
 %%%%% title : short title may not be used but TITLE is required.
 % \title{TITLE}
 % \title[short title]{TITLE}
-\title{Here is the Title}
+\title{The effecient GPU lattice Boltzmann multicomponent and multiphase systems modelling}
 
 %%%%% author(s) :
 % single author:
@@ -20,10 +24,13 @@
 % \footnote and \thanks are not used in the heading section.
 % Another acknowlegments/support of grants, state in Acknowledgments section
 % \section*{Acknowledgments}
-\author[O.~Author]{Only Author\corrauth}
-\address{School of Mathematical Sciences, Beijing Normal University,
-Beijing 100875, P.R. China}
-\email{{\tt author@email} (O.~Author)}
+\author[M.~Januszewski and A.~Kuzmin]{M.~Januszewski\affil{1}\corrauth and A.~Kuzmin\affil{2}}
+\address{\affilnum{1}\ University, Poland\\
+\affilnum{2}\ Department of Mechanical and Manufacturing Engineering,
+Schulich School of Engineering,
+University of Calgary, Canada
+}
+\emails{{\tt michalj@gmail.com} (M.~Januszewski),{\tt shurik.kuzmin@gmail.com} (A.~Kuzmin)}
 
 % multiple authors:
 % Note the use of \affil and \affilnum to link names and addresses.
@@ -47,14 +54,15 @@ Beijing 100875, P.R. China}
 
 %%%%% Begin Abstract %%%%%%%%%%%
 \begin{abstract}
-The abstract should provide a brief summary of the main findings of the paper.
+Despite the number and successful implementations of number of lattice Boltzmann systems on Graphical Processor Units (GPUs), the implementation of more complicated problems as multiphase models or Nearest-Neighbours (NN) interaction, which includes all the boundary conditions, on GPUs is still not well developed. The purpose of the paper is twofold: to develop the efficient GPUs implementation algorithms for the binary liquids flows, which are subclass of the NN interactions, and to illustrate the usefullness in terms of performance of GPUs for multiphase models simulations.
 \end{abstract}
 %%%%% end %%%%%%%%%%%
 
 %%%%% AMS/PACs/Keywords %%%%%%%%%%%
 %\pac{}
-\ams{52B10, 65D18, 68U05, 68U07}
-\keywords{moving mesh method, conservative interpolation, iterative method, $l^2$ projection.}
+
+\ams{52B10, 65D18, 68U05, 68U07{\color{red} We need to find somewhere classifications.}}
+\keywords{Lattice Boltzmann method, GPU, Shan-Chen model, Free-energy model, Binary liquids}
 
 %%%% maketitle %%%%%
 \maketitle
@@ -62,56 +70,149 @@ The abstract should provide a brief summary of the main findings of the paper.
 
 %%%% Start %%%%%%
 \section{Introduction}
-\label{sec1}
-In the past two decades, there has been important progress in developing adaptive mesh methods for PDEs.
-Mesh adaptivity is usually of two types in form: local mesh refinement and moving mesh method.  ....
+\label{sec:introduction}
+During the last two decades since the lattice Boltzmann method was introduced \cite{mcnamara}, the method became mature to compete with the well established computational fluid dynamics (CFD). Due to the kinetic nature of the method the method is applicable to simulate not only hydrodynamics but also thermal flows \cite{karlin-minimalmodels,yuan-thermal}, micro-flows \cite{ansumali-small-knudsen}, ferrofluids \cite{rosensweig,kuzmin-aniso}, multiphase flows \cite{rothman-color,Shan-chen:extended,swift}. In the presence of complex physical effects such as turbulence, multi-phase flows, flow of oil and gas through porous material, flow around surfaces with complex geometries, or blood flow with deformable particles, the solution of the basic Navier-Stokes equations becomes difficult or impractical. On the other hand, the micro-scale calculations for such systems based on the  Molecular Dynamics approach (MD) are computationally extremely demanding.  The Lattice Boltzmann Method (LBM), which focuses on the meso-scale, may be the best choice for such complex flow problems, being able to capture macro- and micro-flows.
 
-\section{Preparation of Manuscript}
-\label{sec2}
-The Title Page should contain the article title, authors' names and complete affiliations,
-and email addresses of all authors. The Abstract should provide a brief summary of the main findings of the paper.
+{\color{red} Michal, please add here more details.}
+The lattice Boltzmann method is the explicit numerical method opposing some restrictions on the time propagation step. Thus the physical time step corresponding to the numerical time step is relatively small. Performing large-time-scale simulations become unpractical due to the high computational demand. To overcome the problem of the high computational demand the physical problems are calculated with the help of parallel processors of a cluster. The recent years trend is to perform the simulations on Graphical Processing Units (GPUs) which can be viewed as small supercomputers due to the large number of independent threads performing a simulation. The attractive part of simulations on GPUs is the low price (in comparison with clusters) and large performance. Not all the problems are matched to be simulated on parallel machines. However, the lattice Boltzmann method is a perfect match for parallel structure machines as GPUs. 
 
-References should be cited in the text by a number in square brackets.
-Literature cited should appear on a separate page at the end of the article
-and should be styled and punctuated using standard abbreviations for journals
-(see Chemical Abstracts Service Source Index, 1989). For unpublished lectures of symposia,
-include title of paper, name of sponsoring society in full, and date.
-Give titles of unpublished reports with "(unpublished)" following the reference.
-Only articles that have been published or are in press should be included in the references.
-Unpublished results or personal communications should be cited as such in the text.
-Please note the sample at the end of this paper.
+During the last years the method was applied for many different problems, such as, to name a few, the calculation of the drag coefficient for the two-dimensional flow through cylinders \cite{tolke-twod} and moving sphere in three-dimensional channel \cite{tolke-GPU}. To the authors' best knowledge only simple hydrodynamics problems GPUs implementation is thoroughly described in the literature. However, the nearest neighbours (NN) interaction which includes advanced boundary lattice Boltzmann methods and multiphase problems are still not covered. For many multiphase problems the local density gradient is required to properly simulate the physics. The implementation of the multiphase models are more challenging than simple hydrodynamics problems because of the additional information required from other nodes. The simple hydrodynamics lattice Boltzmann method is local and is perfectly parallelized. The NN problems requires the additional information from other nodes and can't be addressed as local any more. 
 
-Equations should be typewritten whenever possible and the number placed in parentheses at the right margin.
-Reference to equations should use the form "Eq. (2.1)" or simply "(2.1)." Superscripts and subscripts should
-be typed or handwritten clearly above and below the line, respectively.
+This work's aim is to present the efficient GPUs algorithms to implement the binary liquids models based on the free-energy approach and the Shan-Chen method. First, we thoroughly describe the GPUs algorithms. Then the Shan-Chen model and the free-energy binary liquid model lattice Boltzmann implementation is presented. The numerical results for the comparison benchmark between those two models is done in terms of performance and accuracy in the ``Numerical results`` section. We conclude the paper with the main findings.
 
-Figures should be in a finished form suitable for publication. Number figures consecutively with Arabic numerals.
-Lettering on drawings should be of professional quality or generated by high-resolution computer graphics and must be
-large enough to withstand appropriate reduction for publication.
-For example, if you use {\sf MATLAB} to do figure plots,
-axis labels should be at least point 18. Title should be 24 points or above. Tick marks labels
-better have 14 points or above. Line width should be 2 (or above).
+\section{LBM}
+\label{sec:lbm:binary:liquids}
+As mentioned previously, one of the most popular multiphase models is the Shan-Chen model. Originally introduced in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers by its simplicity. The results of the model were applied in simulation of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels \cite{fan-multi}, thermal flow \cite{zhang-thermal}, and studies of break-up of the liquid droplet \cite{nourgaliev-breakup}. Many researchers use the model in its original formulation, which has many discrepancies with physics, such as the viscosity dependance of steady-state droplet condition. Thus, the aim of this thesis is to explore the basics of the Shan-Chen model and to resolve the problems associated with it. In this chapter the theory behind the original Shan-Chen model will be presented. The problems coming from the formulation will be enumerated, i.e. the achieved gas-liquid ratio limit, the non-thermodynamical behaviour, the dependence of the surface tension on the same parameter as the equation of state. All of the limitations will be thoroughly examined and supported simulations. Some limitations of the Shan-Chen model will be overcome. For instance, the stability limit can be expanded by applying the extended equilibrium distribution function. The dependence of the surface tension and the equation of state on one parameter is solved with the multirange potential. Also, the extension of the Shan-Chen model, the so-called generalized Shan-Chen model, is presented in order to simulate ferro-fluidics. 
 
-Illustrations in color in most cases can be accepted
-only if the authors defray the cost. At the Editor's discretion a limited number of color figures each year of special
-interest will be published at no cost to the author.
+For simplicity, the two-dimensional implementation of the Shan-Chen model with 9 velocities, the D2Q9 model, is used in this chapter. However, the results are general in nature and can be applied to three-dimensional problems.
 
+\subsection{Shan-Chen model}
 
+In the Shan-Chen model \cite{Shan-chen:extended} the force at a given node depends on all local neighbours characteristics:
+\begin{equation}  \label{Shan-Chen:Shan-Chen:cont}
+\bm{F}=G\psi_{0}\sum_{i}{w_i \psi_{i}\bm{c_{i}}},
+\end{equation}
+where $\psi$ is the function of local characteristics of node, i.e. density. The function $\psi$ is usually in the literature noted as the pseudopotential. In the above, $\psi_0$ denotes the local value at a given lattice site, and the summation, $i$, is taken over
+neighbours of the node defined by the discrete velocity set $\{\bm{c_i}\}$. Coefficient $G$ is responsible for the attraction force between the molecules. Overall, the Shan-Chen force is the approximation of the force between molecules \cite{kwok,kwok-contact-angle}.
+
+\subsection{Equation of state}
+The equation of state for the LBE \cite{Succi-book} is $P=c_s^2\rho$, as it was shown in equation (\ref{navier-stokes:with:everything}), where $c_s$ is the scaling parameter which for the D2Q9 model equals $c_s=1/\sqrt{3}$. However, the inclusion of a density-dependent force term brings about a non-ideal contribution.
+Using the Taylor expansion, the Shan-Chen force (\ref{Shan-Chen:Shan-Chen:cont}) for the D2Q9 model can be expressed as follows:
+\begin{equation}
+\begin{aligned}
+\bm{F}=&G\psi(x,y)(w_1 \psi(x+c\Delta t,y)\bm{c_{1}}+w_2 \psi(x,y+c\Delta t)\bm{c_{2}}%
++w_3 \psi(x-c\Delta t,y)\bm{c_{3}}+ \\
+&w_4 \psi(x,y-c\Delta t)\bm{c_{4}}+w_5 \psi(x+c\Delta t,y+c\Delta t)\bm{c_{5}}+ \\
+&w_6 \psi(x-c\Delta t,y+c\Delta t)\bm{c_{6}}+w_7 \psi(x-c\Delta t,y-c\Delta t)\bm{%
+c_{7}}+ \\
+&w_8 \psi(x+c\Delta t,y-c\Delta t)\bm{c_{8}})=G\psi(\frac{1}{3}\bm{\nabla}\psi+%
+\frac{1}{18}\bm{\nabla}\Delta\psi).
+\end{aligned}
+\end{equation}
+The following formulation is derived algebraically:
+\begin{equation}
+\label{shan-chen:force:taylor:expansion}
+\begin{aligned}
+F_{\alpha}&=G\psi\left(\frac{1}{3}\partial_{\alpha}\psi+\frac{1}{18}\partial_{\alpha}\Delta%
+\psi\right) =G\left(\frac{1}{6}\partial_{\alpha}\psi^2+\frac{1}{18}%
+\biggl(\partial_{\alpha}(\psi\Delta\psi)-\Delta\psi\partial_{\alpha}\psi\biggr)\right) \\
+&=G\left(\frac{1}{6}\partial_{\alpha}\psi^2+\frac{1}{18}%
+\biggl(\partial_{\alpha}(\psi\Delta\psi)+\frac{1}{2}\partial_{\alpha}|\bm{\nabla}\psi|^2
+-\partial_{\beta}\partial_{\alpha}\psi\partial_{\beta}\psi\biggr)\right).
+\end{aligned}
+\end{equation}
+The force influence can be included to the momentum-flux tensor \cite{Sbragaglia-Succi}:
+\begin{equation*}
+\partial_{\beta}P_{\alpha\beta}=-F_{\alpha}+\partial_{\alpha}p=-F_{\alpha}+\partial_{\alpha}(c_s^2%
+\rho).
+\end{equation*}
+Thus, the flux tensor $P_{\alpha\beta}$ is modified as follows:
+\begin{equation*}
+P_{\alpha\beta}=\biggl(c_s^2\rho+\frac{G}{6}\psi^2+\frac{G}{36}%
+|\bm{\nabla}\psi|^2 +\frac{G}{18}\psi\Delta\psi\biggr)\delta_{\alpha\beta}-\frac{G}{%
+18}\partial_{\alpha}\psi\partial_{\beta}\psi.
+\end{equation*}
+By analogy with classical mechanics, the potential of the force can be introduced as:
+\begin{equation}
+\label{force:potential}
+U=\frac{G}{6}\psi^2+\frac{G}{36}|\bm{\nabla}\psi|^2+\frac{G}{18}%
+\psi\Delta\psi.
+\end{equation}
+
+Since the gradient terms in equation (\ref{force:potential}) are small compared with the leading terms (the characteristic length of the interface is longer than the lattice spacing, as in
+all diffuse-interface methods), the equation (\ref{force:potential}) can be approximated as
+\begin{equation}
+p=\rho c_s^2+\frac{G}{6}\psi^2.
+\end{equation}
+
+\subsection{Binary liquid model}
+\section{Binary liquid multiphase model}
+In this section we'd like to describe binary liquid model. Binary model is based on free energy model. The free energy for binary liquids can be written as \cite{swift,landau}:
+\begin{equation}
+F=\int{J \mathrm{d}V}=\int{\left(c_s^2\rho\ln\rho+\frac{A}{2}\phi^2+\frac{B}{4}\phi^4 + \frac{k}{2}(\nabla \phi)^2 \right)\mathrm{d}V} \quad,
+\end{equation}
+where coefficients $A$ and $B$ are responsible for the phase separation, coefficient $k$ is responsible for the surface tension between phases and $\phi$ is the order parameter. Notice that if $A<0$ then the phase separation occurs, and $\phi$ will take values as $-1$ and $1$ for equilibrium phases.
+
+By minimising free energy functional with constraints for constant number of particles, one can obtain the chemical potential:
+\begin{equation}
+\mu=A\phi+B\phi^3 - k \Delta \phi
+\end{equation}
+From free energy model we can construct the pressure tensor:
+\begin{equation}
+P_{\alpha \beta}=\bigg(p_0 - k\phi\Delta\phi-k/2 |\nabla \phi|^2\bigg)\delta_{\alpha\beta}+k\partial_{\alpha}\phi\partial_{\beta}\phi \quad,
+\end{equation}
+where
+\begin{equation}
+ p_0=\rho c_s^2+\frac{A}{2}\phi^2+\frac{3}{4}B \phi^2
+\label{binary:bulk:pressure}
+\end{equation}
+
+Let us take parameter $A$ as $-B$, then after substitution we will obtain the following bulk pressure:
+\begin{equation}
+ p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2
+\end{equation}
+
+The whole system of equations which describe binary model is the following:
+\begin{equation}
+\begin{aligned}
+&\partial_t \rho+ \partial_{\alpha} \rho u_{\alpha}=0\\
+&\rho\left(\partial_t+u_{\beta}\partial_{\beta}\right) u_{\alpha}=\\
+&-\partial_{\alpha}P_{\alpha \beta} + \nu\partial_{\beta}\left(\partial_{\alpha}u_{\beta}+\partial_{\beta} u_{\alpha} + \frac{1}{3}\partial_{\gamma} u_{\gamma} \delta_{\alpha\beta}\right)\\
+&\partial_t \phi + \partial_{\alpha} \phi u_{\alpha}=D\Delta \mu
+\end{aligned}
+\label{binary:fluid:system}
+\end{equation}
+
+We take equilibrium distribution function for the binary-liquid gas model. In general, it can be presented in the following form:
+\begin{equation}
+\begin{aligned}
+&g_i^{eq}=w_i(\Gamma \mu + \frac{\phi^m c_{i\alpha} u_{i\alpha}}{c_s^2}+\phi^m \frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}), i\neq0 \\
+&g_0^{eq}=\phi^m-\sum_{i\neq0}{g_i^{eq}}\quad,
+\end{aligned}
+\end{equation}
+where $\mu$ is the chemical potential defined above, and $\Gamma$ is the mobility parameter.
+
+\section{GPU implementation}
+\section{Results}
+\section{Conclusion}
 %%%% Acknowledgments %%%%%%%%
 \section*{Acknowledgments}
-The author would like to thank  ....
+A.~Kuzmin wants to thank the Alberta Ingenuity Fund for their financial support.
 
 %%%% Bibliography  %%%%%%%%%%
-\begin{thebibliography}{99}
-\bibitem{Berger}M. J. Berger and P. Collela, Local adaptive mesh refinement
-for shock hydrodynamics,
-J. Comput. Phys., 82 (1989), 62-84.
-\bibitem{deBoor}C. de Boor,  Good Approximation By Splines With Variable Knots II, in Springer Lecture
- Notes Series 363, Springer-Verlag, Berlin, 1973.
-\bibitem{TanTZ} Z. J. Tan, T. Tang and Z. R. Zhang, A simple moving mesh method for one- and
-two-dimensional phase-field equations, J. Comput. Appl. Math., to appear.
-\bibitem{Toro}E. F. Toro, Riemann Solvers and Numerical Methods for Fluid Dynamics,
-Springer-Verlag Berlin Heidelbert, 1999.
-\end{thebibliography}
+\bibliographystyle{plainnat}
+\bibliography{paper}
+
+% \begin{thebibliography}{99}
+% \bibitem{Berger}M. J. Berger and P. Collela, Local adaptive mesh refinement
+% for shock hydrodynamics,
+% J. Comput. Phys., 82 (1989), 62-84.
+% \bibitem{deBoor}C. de Boor,  Good Approximation By Splines With Variable Knots II, in Springer Lecture
+%  Notes Series 363, Springer-Verlag, Berlin, 1973.
+% \bibitem{TanTZ} Z. J. Tan, T. Tang and Z. R. Zhang, A simple moving mesh method for one- and
+% two-dimensional phase-field equations, J. Comput. Appl. Math., to appear.
+% \bibitem{Toro}E. F. Toro, Riemann Solvers and Numerical Methods for Fluid Dynamics,
+% Springer-Verlag Berlin Heidelbert, 1999.
+% \end{thebibliography}
 
 \end{document}

@@ -82,115 +82,70 @@ This work's aim is to present the efficient GPUs algorithms to implement the bin
 
 \section{LBM}
 \label{sec:lbm:binary:liquids}
-As mentioned previously, one of the most popular multiphase models is the Shan-Chen model. Originally introduced in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers by its simplicity. The results of the model were applied in simulation of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels \cite{fan-multi}, thermal flow \cite{zhang-thermal}, and studies of break-up of the liquid droplet \cite{nourgaliev-breakup}. Many researchers use the model in its original formulation, which has many discrepancies with physics, such as the viscosity dependance of steady-state droplet condition. Thus, the aim of this thesis is to explore the basics of the Shan-Chen model and to resolve the problems associated with it. In this chapter the theory behind the original Shan-Chen model will be presented. The problems coming from the formulation will be enumerated, i.e. the achieved gas-liquid ratio limit, the non-thermodynamical behaviour, the dependence of the surface tension on the same parameter as the equation of state. All of the limitations will be thoroughly examined and supported simulations. Some limitations of the Shan-Chen model will be overcome. For instance, the stability limit can be expanded by applying the extended equilibrium distribution function. The dependence of the surface tension and the equation of state on one parameter is solved with the multirange potential. Also, the extension of the Shan-Chen model, the so-called generalized Shan-Chen model, is presented in order to simulate ferro-fluidics. 
-
-For simplicity, the two-dimensional implementation of the Shan-Chen model with 9 velocities, the D2Q9 model, is used in this chapter. However, the results are general in nature and can be applied to three-dimensional problems.
+This works concentrates on two popular LBM multiphase models. Originally introduced in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers by its simplicity.  The free-energy model \cite{swift} is based on the free-energy phase transition \cite{landau}. Both models werre successfully applied in simulation of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels \cite{pooley-contact}, thermal flow \cite{zhang-thermal}, and studies of break-up of the liquid droplet \cite{nourgaliev-breakup}. The section describes the two-dimensional implementation of the Shan-Chen and free-energy models with the D2Q9 model.
 
 \subsection{Shan-Chen model}
-
 In the Shan-Chen model \cite{Shan-chen:extended} the force at a given node depends on all local neighbours characteristics:
 \begin{equation}  \label{Shan-Chen:Shan-Chen:cont}
-\bm{F}=G\psi_{0}\sum_{i}{w_i \psi_{i}\bm{c_{i}}},
+\bm{F}(\bm{x})=-G\psi(\rho(\bm{x}))\sum_{i}{w_i \psi(\rho(\bm{x}+\bm{c_i}))\bm{c_{i}}},
 \end{equation}
-where $\psi$ is the function of local characteristics of node, i.e. density. The function $\psi$ is usually in the literature noted as the pseudopotential. In the above, $\psi_0$ denotes the local value at a given lattice site, and the summation, $i$, is taken over
-neighbours of the node defined by the discrete velocity set $\{\bm{c_i}\}$. Coefficient $G$ is responsible for the attraction force between the molecules. Overall, the Shan-Chen force is the approximation of the force between molecules \cite{kwok,kwok-contact-angle}.
-
-\subsection{Equation of state}
-The equation of state for the LBE \cite{Succi-book} is $P=c_s^2\rho$, as it was shown in equation (\ref{navier-stokes:with:everything}), where $c_s$ is the scaling parameter which for the D2Q9 model equals $c_s=1/\sqrt{3}$. However, the inclusion of a density-dependent force term brings about a non-ideal contribution.
-Using the Taylor expansion, the Shan-Chen force (\ref{Shan-Chen:Shan-Chen:cont}) for the D2Q9 model can be expressed as follows:
-\begin{equation}
-\begin{aligned}
-\bm{F}=&G\psi(x,y)(w_1 \psi(x+c\Delta t,y)\bm{c_{1}}+w_2 \psi(x,y+c\Delta t)\bm{c_{2}}%
-+w_3 \psi(x-c\Delta t,y)\bm{c_{3}}+ \\
-&w_4 \psi(x,y-c\Delta t)\bm{c_{4}}+w_5 \psi(x+c\Delta t,y+c\Delta t)\bm{c_{5}}+ \\
-&w_6 \psi(x-c\Delta t,y+c\Delta t)\bm{c_{6}}+w_7 \psi(x-c\Delta t,y-c\Delta t)\bm{%
-c_{7}}+ \\
-&w_8 \psi(x+c\Delta t,y-c\Delta t)\bm{c_{8}})=G\psi(\frac{1}{3}\bm{\nabla}\psi+%
-\frac{1}{18}\bm{\nabla}\Delta\psi).
-\end{aligned}
-\end{equation}
-The following formulation is derived algebraically:
-\begin{equation}
-\label{shan-chen:force:taylor:expansion}
-\begin{aligned}
-F_{\alpha}&=G\psi\left(\frac{1}{3}\partial_{\alpha}\psi+\frac{1}{18}\partial_{\alpha}\Delta%
-\psi\right) =G\left(\frac{1}{6}\partial_{\alpha}\psi^2+\frac{1}{18}%
-\biggl(\partial_{\alpha}(\psi\Delta\psi)-\Delta\psi\partial_{\alpha}\psi\biggr)\right) \\
-&=G\left(\frac{1}{6}\partial_{\alpha}\psi^2+\frac{1}{18}%
-\biggl(\partial_{\alpha}(\psi\Delta\psi)+\frac{1}{2}\partial_{\alpha}|\bm{\nabla}\psi|^2
--\partial_{\beta}\partial_{\alpha}\psi\partial_{\beta}\psi\biggr)\right).
-\end{aligned}
-\end{equation}
-The force influence can be included to the momentum-flux tensor \cite{Sbragaglia-Succi}:
-\begin{equation*}
-\partial_{\beta}P_{\alpha\beta}=-F_{\alpha}+\partial_{\alpha}p=-F_{\alpha}+\partial_{\alpha}(c_s^2%
-\rho).
-\end{equation*}
-Thus, the flux tensor $P_{\alpha\beta}$ is modified as follows:
+where $\psi$ is the function of local characteristics of a node, and taken as $\psi(\rho)=1-\exp(-\rho)$. Coefficient $G$ is responsible for the attraction force between the molecules. Overall, the Shan-Chen force is the approximation of the force between molecules \cite{kwok,kwok-contact-angle}. The force modifies the momentum fluxes as:
 \begin{equation*}
 P_{\alpha\beta}=\biggl(c_s^2\rho+\frac{G}{6}\psi^2+\frac{G}{36}%
 |\bm{\nabla}\psi|^2 +\frac{G}{18}\psi\Delta\psi\biggr)\delta_{\alpha\beta}-\frac{G}{%
-18}\partial_{\alpha}\psi\partial_{\beta}\psi.
+18}\partial_{\alpha}\psi\partial_{\beta}\psi,
 \end{equation*}
-By analogy with classical mechanics, the potential of the force can be introduced as:
-\begin{equation}
-\label{force:potential}
-U=\frac{G}{6}\psi^2+\frac{G}{36}|\bm{\nabla}\psi|^2+\frac{G}{18}%
-\psi\Delta\psi.
+where the equation of states is changed from original $P=c_s^2 \rho$ \cite{Succi-book} to the van-der-Waals type equation of state:
+\begin{equation} 
+P=c_s^2 \rho +\frac{G}{6} \psi(\rho)^2.
 \end{equation}
 
-Since the gradient terms in equation (\ref{force:potential}) are small compared with the leading terms (the characteristic length of the interface is longer than the lattice spacing, as in
-all diffuse-interface methods), the equation (\ref{force:potential}) can be approximated as
-\begin{equation}
-p=\rho c_s^2+\frac{G}{6}\psi^2.
-\end{equation}
+{\color{red} Michal, you can add here binary Shan-Chen model. You have more information on it than me.}
 
-\subsection{Binary liquid model}
-\section{Binary liquid multiphase model}
-In this section we'd like to describe binary liquid model. Binary model is based on free energy model. The free energy for binary liquids can be written as \cite{swift,landau}:
+\subsection{Binary liquid multiphase model}
+In this section we'd like to describe binary liquid model. Binary model is based on the free energy model \cite{swift,landau}:
 \begin{equation}
-F=\int{J \mathrm{d}V}=\int{\left(c_s^2\rho\ln\rho+\frac{A}{2}\phi^2+\frac{B}{4}\phi^4 + \frac{k}{2}(\nabla \phi)^2 \right)\mathrm{d}V} \quad,
+\mathfrak{F}=\int{J \mathrm{d}V}=\int{\left(c_s^2\rho\ln\rho+\frac{A}{2}\phi^2+\frac{B}{4}\phi^4 + \frac{k}{2}(\nabla \phi)^2 \right)\mathrm{d}V},
 \end{equation}
-where coefficients $A$ and $B$ are responsible for the phase separation, coefficient $k$ is responsible for the surface tension between phases and $\phi$ is the order parameter. Notice that if $A<0$ then the phase separation occurs, and $\phi$ will take values as $-1$ and $1$ for equilibrium phases.
-
-By minimising free energy functional with constraints for constant number of particles, one can obtain the chemical potential:
+where coefficients $A$ and $B$ are responsible for the phase separation, coefficient $k$ is responsible for the surface tension between phases and $\phi$ is the order parameter. Different phases are corresponding to extreme values of $\phi$ as $-1$ and $1$.
+The lattice Boltzmann model for the binary free-energy model is defined through two distribution sets:
 \begin{equation}
-\mu=A\phi+B\phi^3 - k \Delta \phi
+\begin{aligned}
+&f_i^{eq}=w_i \rho \biggl(1+\frac{u_{\alpha}c_{i\alpha}}{c_s^2}+\frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr), i=0\div8\\
+&g_i^{eq}=w_i(\Gamma \mu + \frac{\phi c_{i\alpha} u_{i\alpha}}{c_s^2}+\phi^m \frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}), i\neq0 \\
+&g_0^{eq}=\phi-\sum_{i\neq0}{g_i^{eq}}\quad,
+\end{aligned}
 \end{equation}
-From free energy model we can construct the pressure tensor:
+where $\Gamma$ is the mobility parameter, chemical potential $\mu=-A\phi+A\phi^3-k\Delta\phi$, $k$ is related to the surface tension. The macroscopic parameters are calculated as:
 \begin{equation}
-P_{\alpha \beta}=\bigg(p_0 - k\phi\Delta\phi-k/2 |\nabla \phi|^2\bigg)\delta_{\alpha\beta}+k\partial_{\alpha}\phi\partial_{\beta}\phi \quad,
+\begin{aligned}
+\rho=\sum_i{f_i}\\
+\rho u_{\alpha}=\sum_i{f_i c_{i\alpha}}\\
+\phi=\sum_i{g_i}
+\end{aligned}
 \end{equation}
-where
-\begin{equation}
- p_0=\rho c_s^2+\frac{A}{2}\phi^2+\frac{3}{4}B \phi^2
-\label{binary:bulk:pressure}
-\end{equation}
-
-Let us take parameter $A$ as $-B$, then after substitution we will obtain the following bulk pressure:
-\begin{equation}
- p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2
-\end{equation}
-
-The whole system of equations which describe binary model is the following:
+The equilibrium distribution functions lead to the macroscopic equations {\color{red} Give citation here}:
 \begin{equation}
 \begin{aligned}
 &\partial_t \rho+ \partial_{\alpha} \rho u_{\alpha}=0\\
 &\rho\left(\partial_t+u_{\beta}\partial_{\beta}\right) u_{\alpha}=\\
 &-\partial_{\alpha}P_{\alpha \beta} + \nu\partial_{\beta}\left(\partial_{\alpha}u_{\beta}+\partial_{\beta} u_{\alpha} + \frac{1}{3}\partial_{\gamma} u_{\gamma} \delta_{\alpha\beta}\right)\\
-&\partial_t \phi + \partial_{\alpha} \phi u_{\alpha}=D\Delta \mu
+&\partial_t \phi + \partial_{\alpha} \phi u_{\alpha}=D\Delta \mu,
 \end{aligned}
 \label{binary:fluid:system}
 \end{equation}
+with the bulk pressure $p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2$.
 
+{\color{red} Michal, need your help here. Which parameters have you used for simulation. Please check above.}
 We take equilibrium distribution function for the binary-liquid gas model. In general, it can be presented in the following form:
-\begin{equation}
+\subsection{Lattice Boltzmann implementation}
+For all distribution functions the collision and streaming step are performed:
+\begin{equation*}
 \begin{aligned}
-&g_i^{eq}=w_i(\Gamma \mu + \frac{\phi^m c_{i\alpha} u_{i\alpha}}{c_s^2}+\phi^m \frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}), i\neq0 \\
-&g_0^{eq}=\phi^m-\sum_{i\neq0}{g_i^{eq}}\quad,
+f_i^{\star}=(1-\omega)f_i+f_i^{eq}\\
+f_i(\bm{x}+\bm{c_i})=f_i^{\star}. 
 \end{aligned}
-\end{equation}
-where $\mu$ is the chemical potential defined above, and $\Gamma$ is the mobility parameter.
+\end{equation*}
 
 \section{GPU implementation}
 \section{Results}

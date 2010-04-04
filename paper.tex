@@ -54,7 +54,16 @@ University of Calgary, 2500 University Drive NW ,Calgary, Alberta, T2N 1N4 Canad
 
 %%%%% Begin Abstract %%%%%%%%%%%
 \begin{abstract}
-Despite the number and successful implementations of number of lattice Boltzmann systems on Graphics Processing Units (GPUs), the implementation of more complicated problems as multiphase models or Nearest-Neighbours (NN) interaction, which includes all the boundary conditions, on GPUs is still not well developed. The purpose of the paper is twofold: to develop the efficient GPUs implementation algorithms for the binary liquids flows, which are subclass of the NN interactions, and to illustrate the usefullness in terms of performance of GPUs for multiphase models simulations.
+Graphics Processing Units (GPUs) have been succesfully used to simulate
+various systems using the Lattice Boltzmann (LB) method.  The simulations were
+usually either a straightforward port of a CPU code (without any
+regards to performance considerations), or optimized for single phase
+flows.  The implementation of more complicated problems such as
+multiphase models or models with Nearest-Neighbours (NN) interaction
+has never received any special attention.  The purpose of this paper
+is twofold: to illustrate the usefulness of GPUs for multiphase simulations,
+and to carefully develop an optimized and efficient algorithm for GPU
+simulations of fluid flows using LB models with NN terms.
 \end{abstract}
 %%%%% end %%%%%%%%%%%
 
@@ -62,7 +71,7 @@ Despite the number and successful implementations of number of lattice Boltzmann
 %\pac{}
 
 \ams{52B10, 65D18, 68U05, 68U07{\color{red} We need to find somewhere classifications.}}
-\keywords{Lattice Boltzmann method, GPU, Shan-Chen model, Free-energy model, Binary liquids}
+\keywords{Lattice Boltzmann method, GPU, Shan-Chen model, Free-energy model, binary liquids, multiphase flow, CUDA, OpenCL, GPGPU}
 
 %%%% maketitle %%%%%
 \maketitle

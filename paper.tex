@@ -80,19 +80,19 @@ simulations of fluid flows using LB models with NN terms.
 %%%% Start %%%%%%
 \section{Introduction}
 \label{sec:introduction}
-During the last two decades since the lattice Boltzmann method was introduced \cite{mcnamara}, the
-method became mature to compete with the well established computational fluid dynamics (CFD).
-Due to the kinetic nature of the method the method is applicable to simulate not only
+During the last two decades since its introduction \cite{mcnamara}, the Lattice Boltzmann Method (LBM)
+became mature enough to compete with other well-established approaches to computational fluid dynamics (CFD).
+Due to its kinetic nature, LBM can be used to simulate not only simple
 hydrodynamics but also thermal flows \cite{karlin-minimalmodels,yuan-thermal},
-micro-flows \cite{ansumali-small-knudsen}, ferrofluids \cite{rosensweig,kuzmin-aniso},
+micro-flows \cite{ansumali-small-knudsen}, ferrofluids \cite{rosensweig,kuzmin-aniso}, and
 multiphase flows \cite{rothman-color,Shan-chen:extended,swift}. In the presence of complex
 physical effects such as turbulence, multi-phase flows, flow of oil and gas through porous
 material, flow around surfaces with complex geometries, or blood flow with deformable
 particles, the solution of the basic Navier-Stokes equations becomes difficult or
-impractical. On the other hand, the micro-scale calculations for such systems based
-on the  Molecular Dynamics approach (MD) are computationally extremely demanding.
+impractical. On the other hand, micro-scale calculations for such systems based
+on the Molecular Dynamics approach are computationally extremely demanding.
 The Lattice Boltzmann Method (LBM), which focuses on the meso-scale, may be the best
-choice for such complex flow problems, being able to capture macro- and micro-flows.
+choice for such complex flow problems, being able to capture the salient details of both macro- and micro-flows.
 
 {\color{red} Michal, please add here more details.}
 The lattice Boltzmann method is the explicit numerical method opposing some restrictions on the time propagation step. Thus the physical time step corresponding to the numerical time step is relatively small. Performing large-time-scale simulations become unpractical due to the high computational demand. To overcome the problem of the high computational demand the physical problems are calculated with the help of parallel processors of a cluster. The recent years trend is to perform the simulations on Graphical Processing Units (GPUs) which can be viewed as small supercomputers due to the large number of independent threads performing a simulation. The attractive part of simulations on GPUs is the low price (in comparison with clusters) and large performance. Not all the problems are matched to be simulated on parallel machines. However, the lattice Boltzmann method is a perfect match for parallel structure machines as GPUs. 

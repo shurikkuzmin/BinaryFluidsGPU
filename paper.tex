@@ -91,40 +91,45 @@ material, flow around surfaces with complex geometries, or blood flow with defor
 particles, the solution of the basic Navier-Stokes equations becomes difficult or
 impractical. On the other hand, micro-scale calculations for such systems based
 on the Molecular Dynamics approach are computationally extremely demanding.
-The Lattice Boltzmann Method (LBM), which focuses on the meso-scale, may be the best
+The lattice-Boltzmann method, which focuses on the meso-scale, may be the best
 choice for such complex flow problems, being able to capture the salient details of both macro- and micro-flows.
 
-{\color{red} Michal, please add here more details.}
-The lattice Boltzmann method is the explicit numerical method opposing some restrictions on the
-time propagation step. Thus the physical time step corresponding to the numerical time step is
-relatively small. Performing large-time-scale simulations become unpractical due to the high
-computational demand. To overcome the problem of the high computational demand the physical problems
-are calculated with the help of parallel processors of a cluster. The recent years trend is to perform
-the simulations on Graphical Processing Units (GPUs) which can be viewed as small supercomputers
-due to the large number of independent threads performing a simulation. The attractive part
-of simulations on GPUs is the low price (in comparison with clusters) and large performance.
-Not all the problems are matched to be simulated on parallel machines. However, the lattice
-Boltzmann method is a perfect match for parallel structure machines as GPUs.
+LB is an explicit numerical method, which poses some restrictions on the size of the time step --
+it has to be kept relatively small in order to preserve the numerical stability of the scheme.  Long-time
+simulations in large domains can thus quickly become impractical due to the high computational demand.
+The usual solution to this problem is to use a cluster to run the simulations.  In the last few
+years, an interesting alternative in the form of Graphics Processing Units of commodity video
+cards has emerged.  The GPUs can be viewed as small supercomputers due to their high
+computational power (e.g. 1 TFLOPS for a Tesla C1060) and ability to execute multiple
+independent threads simultaneously.  Their low price makes them an interesting hardware
+platform for numerical calculations of many kinds, but it has to be kept in mind that not
+all problems are well suited for the specific architecture of the GPU.  The Lattice-Boltzmann
+method, due it its inherent parallelism and locality is however a perfect match for this
+new hardware environment.
 
-During the last years the method was applied for many different problems, such as, to name
-a few, the calculation of the drag coefficient for the two-dimensional flow through
-cylinders \cite{tolke-twod} and moving sphere in three-dimensional channel \cite{tolke-GPU}.
-To the authors' best knowledge only simple hydrodynamics problems GPUs implementation is
-thoroughly described in the literature. However, the nearest neighbours (NN) interaction
-which includes advanced boundary lattice Boltzmann methods and multiphase problems are
-still not covered. For many multiphase problems the local density gradient is required
-to properly simulate the physics. The implementation of the multiphase models are more
-challenging than simple hydrodynamics problems because of the additional information
-required from other nodes. The simple hydrodynamics lattice Boltzmann method is local
-and is perfectly parallelized. The NN problems requires the additional information
-from other nodes and can't be addressed as local any more.
-
-This work's aim is to present the efficient GPUs algorithms to implement the binary
-liquids models based on the free-energy approach and the Shan-Chen method. First, we
-thoroughly describe the GPUs algorithms. Then the Shan-Chen model and the free-energy
-binary liquid model lattice Boltzmann implementation is presented. The numerical results
-for the comparison benchmark between those two models is done in terms of performance
-and accuracy in the ``Numerical results`` section. We conclude the paper with the main findings.
+This was quickly noticed by the CFD community and in the last few years the method was
+implemented on NVIDIA GPUs and applied to many different problems, such as calculation of
+the drag coefficient for the two-dimensional flow through cylinders \cite{tolke-twod} and
+for a moving sphere in a three-dimensional channel \cite{tolke-GPU}.  In the majority of these
+problems only fully local, single-fluid LB models were used.  Only very recently some
+work on more complex models with NN interactions has been done {\color{red} cite Succi's paper},
+but using a code ported from a CPU version, and not optimized specifically for the GPU
+environment.
+%%
+% To the authors' best knowledge only simple
+% hydrodynamics problems GPUs implementation is thoroughly described in the literature.
+%%
+% This is actually not true anymore -- see the Succi's PRE paper about LBM on GPUs
+The aim of this paper is to present efficient GPU-optimized algorithms for LB models
+with NN interaction terms.  Such models are abundant and of enormous practical importance.
+They include the Shan-Chen model, free-energy binary fluid models and higher-order
+boundary conditions for fluid flows.  In the following sections, we first present
+the details of the Shan-Chen and free-energy LB models.  The reader
+is then briefly introduced to the main features of the CUDA environment
+that we use to program the GPUs, which is followed by a thorough description
+of the GPU algorithms and an analysis of their efficiency.  In section \ref{sec:bechmark}, the two
+binary fluid models are compared in terms of performance and accuracy.
+We conclude the paper with a summary of the main findings.
 
 \section{LBM}
 \label{sec:lbm:binary:liquids}
@@ -195,6 +200,8 @@ f_i(\bm{x}+\bm{c_i})=f_i^{\star}.
 
 \section{GPU implementation}
 \section{Results}
+\label{sec:benchmark}
+
 \section{Conclusion}
 %%%% Acknowledgments %%%%%%%%
 \section*{Acknowledgments}

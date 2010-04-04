@@ -95,11 +95,36 @@ The Lattice Boltzmann Method (LBM), which focuses on the meso-scale, may be the 
 choice for such complex flow problems, being able to capture the salient details of both macro- and micro-flows.
 
 {\color{red} Michal, please add here more details.}
-The lattice Boltzmann method is the explicit numerical method opposing some restrictions on the time propagation step. Thus the physical time step corresponding to the numerical time step is relatively small. Performing large-time-scale simulations become unpractical due to the high computational demand. To overcome the problem of the high computational demand the physical problems are calculated with the help of parallel processors of a cluster. The recent years trend is to perform the simulations on Graphical Processing Units (GPUs) which can be viewed as small supercomputers due to the large number of independent threads performing a simulation. The attractive part of simulations on GPUs is the low price (in comparison with clusters) and large performance. Not all the problems are matched to be simulated on parallel machines. However, the lattice Boltzmann method is a perfect match for parallel structure machines as GPUs. 
+The lattice Boltzmann method is the explicit numerical method opposing some restrictions on the
+time propagation step. Thus the physical time step corresponding to the numerical time step is
+relatively small. Performing large-time-scale simulations become unpractical due to the high
+computational demand. To overcome the problem of the high computational demand the physical problems
+are calculated with the help of parallel processors of a cluster. The recent years trend is to perform
+the simulations on Graphical Processing Units (GPUs) which can be viewed as small supercomputers
+due to the large number of independent threads performing a simulation. The attractive part
+of simulations on GPUs is the low price (in comparison with clusters) and large performance.
+Not all the problems are matched to be simulated on parallel machines. However, the lattice
+Boltzmann method is a perfect match for parallel structure machines as GPUs.
 
-During the last years the method was applied for many different problems, such as, to name a few, the calculation of the drag coefficient for the two-dimensional flow through cylinders \cite{tolke-twod} and moving sphere in three-dimensional channel \cite{tolke-GPU}. To the authors' best knowledge only simple hydrodynamics problems GPUs implementation is thoroughly described in the literature. However, the nearest neighbours (NN) interaction which includes advanced boundary lattice Boltzmann methods and multiphase problems are still not covered. For many multiphase problems the local density gradient is required to properly simulate the physics. The implementation of the multiphase models are more challenging than simple hydrodynamics problems because of the additional information required from other nodes. The simple hydrodynamics lattice Boltzmann method is local and is perfectly parallelized. The NN problems requires the additional information from other nodes and can't be addressed as local any more. 
+During the last years the method was applied for many different problems, such as, to name
+a few, the calculation of the drag coefficient for the two-dimensional flow through
+cylinders \cite{tolke-twod} and moving sphere in three-dimensional channel \cite{tolke-GPU}.
+To the authors' best knowledge only simple hydrodynamics problems GPUs implementation is
+thoroughly described in the literature. However, the nearest neighbours (NN) interaction
+which includes advanced boundary lattice Boltzmann methods and multiphase problems are
+still not covered. For many multiphase problems the local density gradient is required
+to properly simulate the physics. The implementation of the multiphase models are more
+challenging than simple hydrodynamics problems because of the additional information
+required from other nodes. The simple hydrodynamics lattice Boltzmann method is local
+and is perfectly parallelized. The NN problems requires the additional information
+from other nodes and can't be addressed as local any more.
 
-This work's aim is to present the efficient GPUs algorithms to implement the binary liquids models based on the free-energy approach and the Shan-Chen method. First, we thoroughly describe the GPUs algorithms. Then the Shan-Chen model and the free-energy binary liquid model lattice Boltzmann implementation is presented. The numerical results for the comparison benchmark between those two models is done in terms of performance and accuracy in the ``Numerical results`` section. We conclude the paper with the main findings.
+This work's aim is to present the efficient GPUs algorithms to implement the binary
+liquids models based on the free-energy approach and the Shan-Chen method. First, we
+thoroughly describe the GPUs algorithms. Then the Shan-Chen model and the free-energy
+binary liquid model lattice Boltzmann implementation is presented. The numerical results
+for the comparison benchmark between those two models is done in terms of performance
+and accuracy in the ``Numerical results`` section. We conclude the paper with the main findings.
 
 \section{LBM}
 \label{sec:lbm:binary:liquids}

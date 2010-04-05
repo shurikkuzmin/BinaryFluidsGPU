@@ -131,35 +131,54 @@ of the GPU algorithms and an analysis of their efficiency.  In section \ref{sec:
 binary fluid models are compared in terms of performance and accuracy.
 We conclude the paper with a summary of the main findings.
 
-\section{LBM}
+\section{The Lattice-Boltzmann method}
 \label{sec:lbm:binary:liquids}
-This works concentrates on two popular LBM multiphase models. Originally introduced in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers by its simplicity.  The free-energy model \cite{swift} is based on the free-energy phase transition \cite{landau}. Both models werre successfully applied in simulation of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels \cite{pooley-contact}, thermal flow \cite{zhang-thermal}, and studies of break-up of the liquid droplet \cite{nourgaliev-breakup}. The section describes the two-dimensional implementation of the Shan-Chen and free-energy models with the D2Q9 model.
+This works concentrates on two popular LBM multiphase models. Originally introduced
+in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers
+by its simplicity.  The free-energy model \cite{swift} is based on the free-energy
+phase transition \cite{landau}. Both models werre successfully applied in simulation
+of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels
+\cite{pooley-contact}, thermal flow \cite{zhang-thermal}, and studies of break-up
+of the liquid droplet \cite{nourgaliev-breakup}. The section describes the
+two-dimensional implementation of the Shan-Chen and free-energy models with
+the D2Q9 model.
 
 \subsection{Shan-Chen model}
-In the Shan-Chen model \cite{Shan-chen:extended} the force at a given node depends on all local neighbours characteristics:
+In the Shan-Chen model \cite{Shan-chen:extended} the force at a given node depends
+on all local neighbours characteristics:
 \begin{equation}  \label{Shan-Chen:Shan-Chen:cont}
 \bm{F}(\bm{x})=-G\psi(\rho(\bm{x}))\sum_{i}{w_i \psi(\rho(\bm{x}+\bm{c_i}))\bm{c_{i}}},
 \end{equation}
-where $\psi$ is the function of local characteristics of a node, and taken as $\psi(\rho)=1-\exp(-\rho)$. Coefficient $G$ is responsible for the attraction force between the molecules. Overall, the Shan-Chen force is the approximation of the force between molecules \cite{kwok,kwok-contact-angle}. The force modifies the momentum fluxes as:
+where $\psi$ is the function of local characteristics of a node, and taken
+as $\psi(\rho)=1-\exp(-\rho)$. Coefficient $G$ is responsible for the attraction
+force between the molecules. Overall, the Shan-Chen force is the approximation of
+the force between molecules \cite{kwok,kwok-contact-angle}. The force modifies
+the momentum fluxes as:
 \begin{equation*}
 P_{\alpha\beta}=\biggl(c_s^2\rho+\frac{G}{6}\psi^2+\frac{G}{36}%
 |\bm{\nabla}\psi|^2 +\frac{G}{18}\psi\Delta\psi\biggr)\delta_{\alpha\beta}-\frac{G}{%
 18}\partial_{\alpha}\psi\partial_{\beta}\psi,
 \end{equation*}
-where the equation of states is changed from original $P=c_s^2 \rho$ \cite{Succi-book} to the van-der-Waals type equation of state:
-\begin{equation} 
+where the equation of states is changed from original $P=c_s^2 \rho$ \cite{Succi-book}
+to the van-der-Waals type equation of state:
+\begin{equation}
 P=c_s^2 \rho +\frac{G}{6} \psi(\rho)^2.
 \end{equation}
 
 {\color{red} Michal, you can add here binary Shan-Chen model. You have more information on it than me.}
 
 \subsection{Binary liquid multiphase model}
-In this section we'd like to describe binary liquid model. Binary model is based on the free energy model \cite{swift,landau}:
+In this section we describe the binary liquid model. Binary model is based on
+the free energy model \cite{swift,landau}:
 \begin{equation}
 \mathfrak{F}=\int{J \mathrm{d}V}=\int{\left(c_s^2\rho\ln\rho+\frac{A}{2}\phi^2+\frac{B}{4}\phi^4 + \frac{k}{2}(\nabla \phi)^2 \right)\mathrm{d}V},
 \end{equation}
-where coefficients $A$ and $B$ are responsible for the phase separation, coefficient $k$ is responsible for the surface tension between phases and $\phi$ is the order parameter. Different phases are corresponding to extreme values of $\phi$ as $-1$ and $1$.
-The lattice Boltzmann model for the binary free-energy model is defined through two distribution sets:
+where coefficients $A$ and $B$ are responsible for the phase separation,
+coefficient $k$ is responsible for the surface tension between phases and
+$\phi$ is the order parameter. Different phases are corresponding to
+extreme values of $\phi$ as $-1$ and $1$.
+The lattice Boltzmann model for the binary free-energy model is defined
+through two distribution sets:
 \begin{equation}
 \begin{aligned}
 &f_i^{eq}=w_i \rho \biggl(1+\frac{u_{\alpha}c_{i\alpha}}{c_s^2}+\frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr), i=0\div8\\
@@ -167,7 +186,9 @@ The lattice Boltzmann model for the binary free-energy model is defined through 
 &g_0^{eq}=\phi-\sum_{i\neq0}{g_i^{eq}}\quad,
 \end{aligned}
 \end{equation}
-where $\Gamma$ is the mobility parameter, chemical potential $\mu=-A\phi+A\phi^3-k\Delta\phi$, $k$ is related to the surface tension. The macroscopic parameters are calculated as:
+where $\Gamma$ is the mobility parameter, chemical potential
+$\mu=-A\phi+A\phi^3-k\Delta\phi$, $k$ is related to the surface
+tension. The macroscopic parameters are calculated as:
 \begin{equation}
 \begin{aligned}
 \rho=\sum_i{f_i}\\
@@ -175,7 +196,8 @@ where $\Gamma$ is the mobility parameter, chemical potential $\mu=-A\phi+A\phi^3
 \phi=\sum_i{g_i}
 \end{aligned}
 \end{equation}
-The equilibrium distribution functions lead to the macroscopic equations {\color{red} Give citation here}:
+The equilibrium distribution functions lead to the macroscopic equations
+{\color{red} Give citation here}:
 \begin{equation}
 \begin{aligned}
 &\partial_t \rho+ \partial_{\alpha} \rho u_{\alpha}=0\\
@@ -189,6 +211,7 @@ with the bulk pressure $p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2$.
 
 {\color{red} Michal, need your help here. Which parameters have you used for simulation. Please check above.}
 We take equilibrium distribution function for the binary-liquid gas model. In general, it can be presented in the following form:
+
 \subsection{Lattice Boltzmann implementation}
 For all distribution functions the collision and streaming step are performed:
 \begin{equation*}

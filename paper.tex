@@ -132,6 +132,9 @@ binary fluid models are compared in terms of performance and accuracy.
 We conclude the paper with a summary of the main findings.
 
 \section{The Lattice-Boltzmann method}
+
+{\color{red} a general overview of basics of LBM needs to be added here (grid, collision, propagation, etc)}
+
 \label{sec:lbm:binary:liquids}
 This works concentrates on two popular LBM multiphase models. Originally introduced
 in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers
@@ -221,7 +224,47 @@ f_i(\bm{x}+\bm{c_i})=f_i^{\star}.
 \end{aligned}
 \end{equation*}
 
-\section{GPU implementation}
+
+\section{The CUDA Programming Environment}
+
+
+CUDA is implemented in the video card hardware by organizing the GPU around the
+concept of a multiprocessor (MP).  Such a multiprocessor consists of several (8 for
+devices of compute capability lower than 2.0) scalar processors (SPs), each of which is
+capable of executing a thread in a SIMT (Single Instruction, Multiple Threads) manner.
+Each MP also has a limited amount of specialized on-chip memory: a set of 32-bit registers,
+a shared memory block, a constant cache and a texture cache.  The registers are local
+to the scalar processor, but the other types of memory are shared between all SPs
+in a MP, which allows data sharing between threads.
+
+{\color{red} TODO: verify the figures in this paragraph}
+Perhaps the most salient feature of the CUDA architecture is the memory hierarchy
+with 1-2 orders of magnitude differences between access times at each successive levels.
+
+The slowest kind of memory is the host memory accessible only to the CPU.  This memory,
+while potentially very large in size, cannot be accessed directly by the GPU, so in order
+for data stored there to be useful during a GPU simulation, it has to be copied to the
+global device memory.  Such a data transfer goes over the PCI-e bus, which has a maximum
+throughput of about 6~GB/s.
+
+Next in line is the global device memory of the GPU, which can currently span several
+gigabytes and which has a bandwidth of about 100~GB/s.  Global memory accesses are however
+high-latency operations, taking several hundred clock cycles of the GPU to complete {\color{red} Cite NVIDIA documentation here}
+
+The fastest kind of memory currently available on GPUs is the shared memory block residing
+on MPs.  It is currently limited in size to just 16~kB, but has a bandwidth of ca~1.3~TB/s
+and usually a latency no higher than that of a~SP register access.
+
+The above description readily suggests an optimization strategy which we will generally
+follow in the next section and which can be summarized as: move as much data as possible
+to the fastest kind of memory available and keep it there as long as possible, while minimizing
+accesses to the slower kinds of memory.
+
+\section{GPU implementation of LBM}
+
+We will now outline an efficient and general GPU LBM algorithm taking into consideration
+the facts from the previous section.
+
 \section{Results}
 \label{sec:benchmark}
 

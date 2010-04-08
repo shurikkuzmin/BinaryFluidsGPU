@@ -55,32 +55,6 @@ int main(int argc, char** argv)
 	float f2_mem[nx*ny*npop];
 	float feq[npop];
 	
-	float gradlaplace[25]={-1.0/72.0,-4.0/72.0,0.0,4.0/72.0,1.0/72.0,
-				 -8.0/72.0,4.0/72.0,0.0,-4.0/72.0,8.0/72.0,
-				 -18.0/72.0,72.0/72.0,0.0,-72.0/72.0,18.0/72.0,
-				 -8.0/72.0,4.0/72.0,0.0,-4.0/72.0,8.0/72.0,
-				 -1.0/72.0,-4.0/72.0,0.0,4.0/72.0,1.0/72.0};
-
-	float gradstencilx[9]={0.0,4.0/12.0,0.0,-4.0/12.0,0.0,
-			          1.0/12.0,-1.0/12.0,-1.0/12.0,1.0/12.0};
-
-	float gradstencily[9]={0.0,0.0,4.0/12.0,0.0,-4.0/12.0,
-			          1.0/12.0,1.0/12.0,-1.0/12.0,-1.0/12.0};
-
-
-	float laplacestencil[9]={-20.0/6.0,4.0/6.0,4.0/6.0,4.0/6.0,4.0/6.0,
-					   1.0/6.0,1.0/6.0,1.0/6.0,1.0/6.0};
-
-	int stencil[25][2]={{-2,2},{-1,2},{0,2},{1,2},{2,2},
-			    {-2,1},{-1,1},{0,1},{1,1},{2,1},
-			    {-2,0},{-1,0},{0,0},{1,0},{2,0},
-			    {-2,-1},{-1,-1},{0,-1},{1,-1},{2,-1},
-			    {-2,-2},{-1,-2},{0,-2},{1,-2},{2,-2}};
-
-	int smallstencil[9][2]={{-1,1},{0,1},{1,1},
-			        {-1,0},{0,0},{1,0},
-			        {-1,-1},{0,-1},{1,-1}};
-
 
 	float* f=f_mem;
 	float* f2=f2_mem;
@@ -167,28 +141,9 @@ int main(int argc, char** argv)
 				fy+=weights[k]*cy[k]*(1.0-exp(-rho[nx*iY2+iX2]));
 			}
 
-			for(int k=0;k<9;k++)
-			{
-				float lapl[9];
-				int iX2=(iX+cx[k]+nx) % nx; 
-				int iY2=(iY+cy[k]+ny) % ny;
-				
-				lapl[k]=0.0;
-				for(int m=0;m<9;m++)
-				{
-				    int iX3 = (iX2 + cx[k] + nx) % nx;
-				    int iY3 = (iY2 + cy[k] + ny) % ny;
-				    lapl[k]+=laplacestencil[m]*(1.0-exp(-rho[nx*iY3+iX3]));
-				}
-				lapl[k]*=-rho[nx*iY2+iX2]*exp(-rho[nx*iY2+iX2])+1.0-exp(-rho[nx*iY2+iX2]);
-				
-				fxadd+=0.5*g*gradstencilx[k]*lapl[k];
-				fyadd+=0.5*g*gradstencily[k]*lapl[k];
-			}
 
-
-			fx=-g*(1.0-exp(-rho[i]))*fx+fxadd;
-			fy=-g*(1.0-exp(-rho[i]))*fy+fyadd;
+			fx=-g*(1.0-exp(-rho[i]))*fx;
+			fy=-g*(1.0-exp(-rho[i]))*fy;
 			
 			
 			v1=u1[i]=(f[9*i+1]-f[9*i+3]+f[9*i+5]-f[9*i+6]-f[9*i+7]+f[9*i+8])/dense+fx/(2.0*dense); 

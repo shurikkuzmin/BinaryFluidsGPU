@@ -65,3 +65,43 @@ shared memory propagation, ldc, 1024^2
 
 r:24
 
+*********************************************************************************
+ try 2: texture-based access (1024x1024, single phase SC model)
+*********************************************************************************
+performance for modified SC code: calculate rho field, but ignore interactions
+this effectively sets the upper performance limit for what can be achieved with
+the texture-mediated accesses:
+
+bs = 64:  574
+bs = 128: 588
+
+texture-based rho field access, exp() interaction (intrinstic exp):
+
+bs = 32:  302.80
+bs = 64:  416.93
+bs = 96:  403.33
+bs = 128: 425.49 (675.72)
+bs = 192: 392.70
+
+*********************************************************************************
+ texture-bases access, binary SC model
+*********************************************************************************
+
+texture-based rho/phi, binary SC model:
+[baseline, bs=64, fast_math: 231.94]
+
+bs = 64:  215.70 (270.40)
+bs = 128: 207.09
+
+*** texture, binary fe model
+
+[baseline
+bs = 64:  214.71 (250.82)
+bs = 128: 210.57 (275.12)
+
+]
+
+bs = 64:  224.54 (289.87)
+bs = 128: 220.10 (316.64)
+
+

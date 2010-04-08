@@ -1,0 +1,62 @@
+shared memory size: 16 kB -> 4096 floats (64 x 64), largest thread block size
+is actually (32 x 16) -> 8 floats per thread
+
+performance is limited by global memory throughput => minimize number of global memory accesses
+
+we assume square tiles of n x n when 2d blocks are processed
+
+ (n-1)*(n-1) is true data
+ 2n + 2(n-2) is halo = 4n - 4
+
+total ratios are: number of memory accesses / number of useful output data points
+
+* single phase Shan-Chen, D2Q9
+
+  - default:
+    rho_prep: 9r, 1w = 10
+    cnp: 9r + 9r, 9w = 27
+	total: 37 * n**2 / 9 * n**2
+
+  - shared mem in X direction
+    rho_prep: 9r, 1w = 10
+	cnp: 9r + 3r, 9w = 21
+	total: 31 * n**2 / 9 * n**2
+
+  - two pass, 2d shared mem:
+    rho_prep: 9r, 1w = 10
+	cnp: 10r * (n-1)**2 + r * (4n-4) + 9w
+	total: 10 * (n-1)**2 + (4n-4) + (9 + 10) * (n-1)**2 / 9*(n-1)*(n-1)
+
+  - single pass, 2d shared mem:
+	total: 10 * n**2 + 9 * (n-1)**2 / (9 * (n-1)**2)
+
+* binary Shan-Chen, D2Q9
+
+* single phase Shan-Chen, D3Q19
+
+ - default:
+   rho_prep: 19r, 1w = 20
+   cnp: 19r + 19*r, 19w = 57
+   total: 77 * n**2 / 19 * n**2
+
+ - two pass, 2d shared mem:
+   rho_prep: 19r, 1w = 20
+   cnp: 20r * (n-1)**2 + r * (4n-4) + 19w
+   total: (20*2 * (n-1)**2 + (4n-4) + 19*(n-1)**2) / (19 * (n-1)**2)
+
+ - single pass, 2d shared mem:
+   total: (20 * n**2 + 19 * (n-1)**2) / (19 * (n-1)**2)
+
+* binary Shan-Chen, D3Q19
+
+
+* free-energy 
+
+  19 for advanced stencil -> same complexity as Shan-Chen
+  7 for simple stencil
+
+
+TODO:
+- ghost nodes at boundaries (simplifies border cases)
+- see about reducing number of shared variables
+

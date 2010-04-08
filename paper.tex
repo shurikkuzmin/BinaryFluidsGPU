@@ -246,10 +246,12 @@ while potentially very large in size, cannot be accessed directly by the GPU, so
 for data stored there to be useful during a GPU simulation, it has to be copied to the
 global device memory.  Such a data transfer goes over the PCI-e bus, which has a maximum
 throughput of about 6~GB/s.
+% max 3.2 GB/s one way, measured on a 4xGTX285 system
 
 Next in line is the global device memory of the GPU, which can currently span several
 gigabytes and which has a bandwidth of about 100~GB/s.  Global memory accesses are however
 high-latency operations, taking several hundred clock cycles of the GPU to complete {\color{red} Cite NVIDIA documentation here}
+% 131.9 GB/s for GTX 280, see NVIDIA CUDA Best Practices Guide, v3.0
 
 The fastest kind of memory currently available on GPUs is the shared memory block residing
 on MPs.  It is currently limited in size to just 16~kB, but has a bandwidth of ca~1.3~TB/s

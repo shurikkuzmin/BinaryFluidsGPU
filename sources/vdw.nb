@@ -1,0 +1,47 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[       958,         37]
+NotebookOptionsPosition[       690,         23]
+NotebookOutlinePosition[      1047,         39]
+CellTagsIndexPosition[      1004,         36]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell["Van-der-Waals calculation of the equilibrium densities", "Section",
+ CellChangeTimes->{{3.4796523084632998`*^9, 3.479652330355586*^9}}]
+},
+WindowSize->{1600, 1140},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+Magnification->1.5,
+FrontEndVersion->"7.0 for Linux x86 (64-bit) (November 11, 2008)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[545, 20, 141, 1, 108, "Section"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

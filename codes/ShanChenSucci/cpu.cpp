@@ -176,8 +176,8 @@ int main(int argc, char** argv)
 				lapl[k]=0.0;
 				for(int m=0;m<9;m++)
 				{
-				    int iX3 = (iX2 + cx[k] + nx) % nx;
-				    int iY3 = (iY2 + cy[k] + ny) % ny;
+				    int iX3 = (iX2 + cx[m] + nx) % nx;
+				    int iY3 = (iY2 + cy[m] + ny) % ny;
 				    lapl[k]+=laplacestencil[m]*(1.0-exp(-rho[nx*iY3+iX3]));
 				}
 				lapl[k]*=-rho[nx*iY2+iX2]*exp(-rho[nx*iY2+iX2])+1.0-exp(-rho[nx*iY2+iX2]);
@@ -187,8 +187,8 @@ int main(int argc, char** argv)
 			}
 
 
-			fx=-g*(1.0-exp(-rho[i]))*fx+fxadd;
-			fy=-g*(1.0-exp(-rho[i]))*fy+fyadd;
+			fx=-g*(1.0-exp(-rho[i]))*fx-fxadd;
+			fy=-g*(1.0-exp(-rho[i]))*fy-fyadd;
 			
 			
 			v1=u1[i]=(f[9*i+1]-f[9*i+3]+f[9*i+5]-f[9*i+6]-f[9*i+7]+f[9*i+8])/dense+fx/(2.0*dense); 

@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 	float rho[nx*ny];
 	float u1[nx*ny];
 	float u2[nx*ny];
+	float lapl[nx*ny];
 	float f_mem[nx*ny*npop];
 	float f2_mem[nx*ny*npop];
 	float feq[npop];
@@ -153,6 +154,25 @@ int main(int argc, char** argv)
 			dense=rho[i];
 			int iY=i / nx; 
 			int iX=i % nx; 			
+			
+			lapl[i]=0.0;
+			for(int m=0;m<9;m++)
+			{
+				int iX2 = (iX + cx[m] + nx) % nx;
+				int iY2 = (iY + cy[m] + ny) % ny;
+				lapl[i]+=laplacestencil[m]*(1.0-exp(-rho[nx*iY2+iX2]));
+			}
+			lapl[i]*=-rho[nx*iY+iX]*exp(-rho[nx*iY+iX])+1.0-exp(-rho[nx*iY+iX]);
+			
+		}			
+		
+		
+		for (int i=0; i<nx*ny; i++) 
+		{
+			
+			dense=rho[i];
+			int iY=i / nx; 
+			int iX=i % nx; 			
 
 			float fx=0.0;
 			float fy=0.0;
@@ -165,27 +185,11 @@ int main(int argc, char** argv)
 				int iY2=(iY+cy[k]+ny) % ny;
 				fx+=weights[k]*cx[k]*(1.0-exp(-rho[nx*iY2+iX2]));
 				fy+=weights[k]*cy[k]*(1.0-exp(-rho[nx*iY2+iX2]));
-			}
 
-			for(int k=0;k<9;k++)
-			{
-				float lapl[9];
-				int iX2=(iX+cx[k]+nx) % nx; 
-				int iY2=(iY+cy[k]+ny) % ny;
-				
-				lapl[k]=0.0;
-				for(int m=0;m<9;m++)
-				{
-				    int iX3 = (iX2 + cx[m] + nx) % nx;
-				    int iY3 = (iY2 + cy[m] + ny) % ny;
-				    lapl[k]+=laplacestencil[m]*(1.0-exp(-rho[nx*iY3+iX3]));
-				}
-				lapl[k]*=-rho[nx*iY2+iX2]*exp(-rho[nx*iY2+iX2])+1.0-exp(-rho[nx*iY2+iX2]);
-				
-				fxadd+=1.0/18.0*g*gradstencilx[k]*lapl[k];
-				fyadd+=1.0/18.0*g*gradstencily[k]*lapl[k];
-			}
+				fxadd+=1.0/18.0*g*gradstencilx[k]*lapl[nx*iY2+iX2];
+				fyadd+=1.0/18.0*g*gradstencily[k]*lapl[nx*iY2+iX2];
 
+			}
 
 			fx=-g*(1.0-exp(-rho[i]))*fx-fxadd;
 			fy=-g*(1.0-exp(-rho[i]))*fy-fyadd;

@@ -182,8 +182,8 @@ int main(int argc, char** argv)
 				}
 				lapl[k]*=-rho[nx*iY2+iX2]*exp(-rho[nx*iY2+iX2])+1.0-exp(-rho[nx*iY2+iX2]);
 				
-				fxadd+=0.5*g*gradstencilx[k]*lapl[k];
-				fyadd+=0.5*g*gradstencily[k]*lapl[k];
+				fxadd+=1.0/18.0*g*gradstencilx[k]*lapl[k];
+				fyadd+=1.0/18.0*g*gradstencily[k]*lapl[k];
 			}
 
 

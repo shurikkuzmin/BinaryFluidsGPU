@@ -1,4 +1,4 @@
-\documentclass[mathpazo,sort,numbers]{cicp}
+\documentclass[mathpazo]{cicp}
 \usepackage{bm}
 \usepackage{graphicx}
 \usepackage{color}
@@ -127,7 +127,7 @@ boundary conditions for fluid flows.  In the following sections, we first presen
 the details of the Shan-Chen and free-energy LB models.  The reader
 is then briefly introduced to the main features of the CUDA environment
 that we use to program the GPUs, which is followed by a thorough description
-of the GPU algorithms and an analysis of their efficiency.  In section \ref{sec:bechmark}, the two
+of the GPU algorithms and an analysis of their efficiency.  In section \ref{sec:benchmark}, the two
 binary fluid models are compared in terms of performance and accuracy.
 We conclude the paper with a summary of the main findings.
 
@@ -145,6 +145,15 @@ of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels
 of the liquid droplet \cite{nourgaliev-breakup}. The section describes the
 two-dimensional implementation of the Shan-Chen and free-energy models with
 the D2Q9 model.
+
+The lattice Boltzmann implementation in a standard view:
+\begin{equation}
+\label{standard:implementation}
+\begin{aligned}
+&f_i^{*}(\bm{x},t)=\omega f_i^{eq}(\bm{x},t)-(1-\omega) f_i(\bm{x},t)\\
+&f_i(\bm{x}+\bm{c_i},t+1)=f_i^{*}(\bm{x},t). 
+\end{aligned}
+\end{equation}
 
 \subsection{Shan-Chen model}
 In the Shan-Chen model \cite{Shan-chen:extended} the force at a given node depends
@@ -214,13 +223,38 @@ with the bulk pressure $p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2$.
 
 {\color{red} Michal, need your help here. Which parameters have you used for simulation. Please check above.}
 We take equilibrium distribution function for the binary-liquid gas model. In general, it can be presented in the following form:
+\subsection{Free-energy model}
+The free-energy or pressure model \cite{swift} allows the incorporation of the any equation of state to the lattice Boltzmann equation. The lattice Boltzmann scheme is implemented in a standard form (\ref{standard:implementation}), but the equilibrium function is defined as:
+\begin{equation}
+\begin{aligned}
+f_i^{eq}=&w_i \biggl(p_0(\rho)-3 k\rho\Delta\rho+\rho \frac{c_{i\alpha}u_{\alpha}}{3}+\rho \frac{9 Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2}\biggr)\\
+&+k (w_{ixx} \partial_x \rho \partial_x \rho + w_{ixy} \partial_x \rho \partial_y \rho + w_{iyy} \partial_y \rho \partial_y \rho),
+\end{aligned}
+\end{equation}
+where $w_{ixx}=\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24}\}$, $w_{iyy}=\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24}\}$ and $w_{ixy}=\{0,0,0,0,\dfrac{1}{4},\dfrac{1}{4},-\dfrac{1}{4},-\dfrac{1}{4}\}$. The laplacian and the gradient are taken by the numerical stencils:
+\begin{equation}
+\Delta=\frac{1}{6}
+\begin{pmatrix}
+1&4&1\\
+4&-20&4\\
+1&4&1\\
+\end{pmatrix}\text{ and }
+\partial_x=\frac{1}{12}
+\begin{pmatrix}
+-1&0&1\\
+-4&0&4\\
+-1&0&1\\
+\end{pmatrix}.
+\end{equation}
+
+We implement in terms of convergence,accuracy and performance this model with the Shan-Chen potential, mainly $p_0=\dfrac{\rho}{3}+G\dfrac{\psi^2(\rho)}{6}$.
 
 \subsection{Lattice Boltzmann implementation}
 For all distribution functions the collision and streaming step are performed:
 \begin{equation*}
 \begin{aligned}
-f_i^{\star}=(1-\omega)f_i+f_i^{eq}\\
-f_i(\bm{x}+\bm{c_i})=f_i^{\star}. 
+&f_i^{\star}=(1-\omega)f_i+f_i^{eq}\\
+&f_i(\bm{x}+\bm{c_i})=f_i^{\star}. 
 \end{aligned}
 \end{equation*}
 

@@ -63,12 +63,35 @@ int main(int argc, char** argv)
 	float* f2=f2_mem;
 	
 	float g=-5.0, tau=1.0;
-	float surf=0.05; //-1.0/(3.0*g);
+	float surf=0.01; //-1.0/(3.0*g);
 	int radius=40;
+	float width=5.0;
+	float sigma=1.0;
 	float rhol=1.93;
 	float rhog=0.16;
 	int i;
 	float dense,v1,v2;
+	
+	
+	
+	for (i=0; i<nx*ny; i++)
+	{
+		if (i/nx<=double(ny)/2.0)
+			rho[i]=rhol;
+		else 
+			rho[i]=rhog;
+	}
+	
+	for (int j=0;j<int(width);j++)
+	{
+		for(i=0;i<nx;i++)
+		{
+			rho[(ny/2+j)*nx+i]=rhog+(rhol-rhog)*exp(-j*j/(2.0*sigma*sigma));
+			rho[j*nx+i]=rhog+(rhol-rhog)*exp(-(j-width+1)*(j-width+1)/(2.0*sigma*sigma));
+		}
+	}
+	
+	
 	for (i=0; i<nx*ny; i++)
 	{	
 	/*	if ((i/nx-double(ny)/2.0)*(i/nx-double(ny)/2.0)+(i%nx-double(nx)/2.0)*(i%nx-double(nx)/2.0)<=radius*radius)
@@ -78,10 +101,6 @@ int main(int argc, char** argv)
 		else 
 			rho[i]=rhog;
 	*/	
-		if (i/nx>=double(ny)/2.0)
-			rho[i]=rhol;
-		else
-			rho[i]=rhog;
 
 		
 		dense=rho[i];

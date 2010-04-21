@@ -63,7 +63,7 @@ multiphase models or models with Nearest-Neighbours (NN) interaction
 has never received any special attention.  The purpose of this paper
 is twofold: to illustrate the usefulness of GPUs for multiphase simulations,
 and to carefully develop an optimized and efficient algorithm for GPU
-simulations of fluid flows using LB models with NN terms.
+fluid flows simulations using LB models with NN terms.
 \end{abstract}
 %%%%% end %%%%%%%%%%%
 
@@ -136,24 +136,36 @@ We conclude the paper with a summary of the main findings.
 {\color{red} a general overview of basics of LBM needs to be added here (grid, collision, propagation, etc)}
 
 \label{sec:lbm:binary:liquids}
-This works concentrates on two popular LBM multiphase models. Originally introduced
+This work concentrates on two popular LBM multiphase models. Originally introduced
 in 1993 \cite{Shan-chen:extended} the model attracted a multitude of researchers
 by its simplicity.  The free-energy model \cite{swift} is based on the free-energy
-phase transition \cite{landau}. Both models werre successfully applied in simulation
-of two-phase blood flow \cite{halliday-multicomponent}, flow in microchannels
+phase transition model \cite{landau}. Both models were successfully applied in simulation
+of two-component blood flow \cite{halliday-multicomponent}, flow in microchannels
 \cite{pooley-contact}, thermal flow \cite{zhang-thermal}, and studies of break-up
 of the liquid droplet \cite{nourgaliev-breakup}. The section describes the
 two-dimensional implementation of the Shan-Chen and free-energy models with
-the D2Q9 model.
+the D2Q9 model. 
 
-The lattice Boltzmann implementation in a standard view:
+The lattice Boltzmann equation operates on the rectangular grid representing the physical domain. It utilizes the probability distribution functions containing the information about the macroscopic variables, such as density, momentum. LBE consists from two parts: local collision and propagation operated from one node to another in the certain direction specified by the velocity set.  The lattice Boltzmann implementation in a standard view representing the collision and propagation steps:
 \begin{equation}
 \label{standard:implementation}
 \begin{aligned}
-&f_i^{*}(\bm{x},t)=\omega f_i^{eq}(\bm{x},t)-(1-\omega) f_i(\bm{x},t)\\
-&f_i(\bm{x}+\bm{c_i},t+1)=f_i^{*}(\bm{x},t). 
+&f_i^{*}(\bm{x},t)=\omega f_i^{eq}(\bm{x},t)-(1-\omega) f_i(\bm{x},t) + F_i,&&\text{ collision step}\\
+&f_i(\bm{x}+\bm{c_i},t+1)=f_i^{*}(\bm{x},t),&&\text{ propagation step}, 
 \end{aligned}
 \end{equation}
+where $F_i$ is the external force population. The equilibrium function population is usually given as \cite{}:
+\begin{equation}
+f_i^{eq}=w_i \rho \biggl(1+\frac{c_{i\alpha}u_{\alpha}}{c_s^2}+\frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr),
+\end{equation}
+where for D2Q9 $w_i=\{\dfrac{4}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{36},\dfrac{1}{36},\dfrac{1}{36},\dfrac{1}{36}\}$ and $Q_{i\alpha\beta}=$ with the sound speed parameter $c_s^2=\dfrac{1}{3}$. The macroscopic variables are restored on every time step through the probability function population:
+\begin{equation*}
+\begin{aligned}
+&\rho=\sum_i{f_i}
+&\rho u_{\alpha}=\sum_i{f_i c_{i\alpha}}
+\end{aligned}
+\end{equation*}
+The multiphase models can be simulated either through the force population and/or special equilibrium function. The Shan-Chen model utilizes the force population, but the free-energy model is simulated through the special equilibrium model. Both models are described in the next sections.
 
 \subsection{Shan-Chen model}
 In the Shan-Chen model \cite{Shan-chen:extended} the force at a given node depends
@@ -176,55 +188,13 @@ to the van-der-Waals type equation of state:
 \begin{equation}
 P=c_s^2 \rho +\frac{G}{6} \psi(\rho)^2.
 \end{equation}
-
-{\color{red} Michal, you can add here binary Shan-Chen model. You have more information on it than me.}
-
-\subsection{Binary liquid multiphase model}
-In this section we describe the binary liquid model. Binary model is based on
-the free energy model \cite{swift,landau}:
+The lattice Boltzmann simulation for the Shan-Chen model is implemented through the standard implementation (\ref{standard:implementation}). In the presence of the external force the macroscopic velocity is changed as $\rho u_{\alpha}=\sum_i{f_i c_{i\alpha}}+\dfrac{F_{\alpha}}{2}$. The force population is defined as \cite{guo}:
 \begin{equation}
-\mathfrak{F}=\int{J \mathrm{d}V}=\int{\left(c_s^2\rho\ln\rho+\frac{A}{2}\phi^2+\frac{B}{4}\phi^4 + \frac{k}{2}(\nabla \phi)^2 \right)\mathrm{d}V},
+F_i=w_i\biggl(1-\frac{\omega}{2}\biggr)\biggl(3 (c_{i\alpha}-u_{\alpha}) + 9 (c_{i\beta}u_{\beta})c_{i\alpha}\biggr)F_{\alpha}.
 \end{equation}
-where coefficients $A$ and $B$ are responsible for the phase separation,
-coefficient $k$ is responsible for the surface tension between phases and
-$\phi$ is the order parameter. Different phases are corresponding to
-extreme values of $\phi$ as $-1$ and $1$.
-The lattice Boltzmann model for the binary free-energy model is defined
-through two distribution sets:
-\begin{equation}
-\begin{aligned}
-&f_i^{eq}=w_i \rho \biggl(1+\frac{u_{\alpha}c_{i\alpha}}{c_s^2}+\frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr), i=0\div8\\
-&g_i^{eq}=w_i(\Gamma \mu + \frac{\phi c_{i\alpha} u_{i\alpha}}{c_s^2}+\phi^m \frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}), i\neq0 \\
-&g_0^{eq}=\phi-\sum_{i\neq0}{g_i^{eq}}\quad,
-\end{aligned}
-\end{equation}
-where $\Gamma$ is the mobility parameter, chemical potential
-$\mu=-A\phi+A\phi^3-k\Delta\phi$, $k$ is related to the surface
-tension. The macroscopic parameters are calculated as:
-\begin{equation}
-\begin{aligned}
-\rho=\sum_i{f_i}\\
-\rho u_{\alpha}=\sum_i{f_i c_{i\alpha}}\\
-\phi=\sum_i{g_i}
-\end{aligned}
-\end{equation}
-The equilibrium distribution functions lead to the macroscopic equations
-{\color{red} Give citation here}:
-\begin{equation}
-\begin{aligned}
-&\partial_t \rho+ \partial_{\alpha} \rho u_{\alpha}=0\\
-&\rho\left(\partial_t+u_{\beta}\partial_{\beta}\right) u_{\alpha}=\\
-&-\partial_{\alpha}P_{\alpha \beta} + \nu\partial_{\beta}\left(\partial_{\alpha}u_{\beta}+\partial_{\beta} u_{\alpha} + \frac{1}{3}\partial_{\gamma} u_{\gamma} \delta_{\alpha\beta}\right)\\
-&\partial_t \phi + \partial_{\alpha} \phi u_{\alpha}=D\Delta \mu,
-\end{aligned}
-\label{binary:fluid:system}
-\end{equation}
-with the bulk pressure $p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2$.
-
-{\color{red} Michal, need your help here. Which parameters have you used for simulation. Please check above.}
-We take equilibrium distribution function for the binary-liquid gas model. In general, it can be presented in the following form:
+The Shan-Chen model is one-component multiphase model. The multicomponent modification is presented in the Appendix {\color{red} put appendix reference here}.
 \subsection{Free-energy model}
-The free-energy or pressure model \cite{swift} allows the incorporation of the any equation of state to the lattice Boltzmann equation. The lattice Boltzmann scheme is implemented in a standard form (\ref{standard:implementation}), but the equilibrium function is defined as:
+The free-energy or pressure model \cite{swift} allows the incorporation of the any equation of state to the lattice Boltzmann equation. In comparison with the Shan-Chen model, the free-energy model is simulated through the special choice of the equilibrium distribution function. The lattice Boltzmann scheme is implemented in a standard form (\ref{standard:implementation}), but the equilibrium function is defined as:
 \begin{equation}
 \begin{aligned}
 f_i^{eq}=&w_i \biggl(p_0(\rho)-3 k\rho\Delta\rho+\rho \frac{c_{i\alpha}u_{\alpha}}{3}+\rho \frac{9 Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2}\biggr)\\
@@ -247,16 +217,7 @@ where $w_{ixx}=\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1
 \end{pmatrix}.
 \end{equation}
 
-We implement in terms of convergence,accuracy and performance this model with the Shan-Chen potential, mainly $p_0=\dfrac{\rho}{3}+G\dfrac{\psi^2(\rho)}{6}$.
-
-\subsection{Lattice Boltzmann implementation}
-For all distribution functions the collision and streaming step are performed:
-\begin{equation*}
-\begin{aligned}
-&f_i^{\star}=(1-\omega)f_i+f_i^{eq}\\
-&f_i(\bm{x}+\bm{c_i})=f_i^{\star}. 
-\end{aligned}
-\end{equation*}
+We implement in terms of convergence,accuracy and performance this model with the Shan-Chen potential, mainly $p_0=\dfrac{\rho}{3}+G\dfrac{\psi^2(\rho)}{6}$. The binary liquid expansion of the free-energy model is presented in Appendix {\color{red} Put appendix here. Probably there is a special command like appendix.}
 
 
 \section{The CUDA Programming Environment}
@@ -308,6 +269,53 @@ the facts from the previous section.
 %%%% Acknowledgments %%%%%%%%
 \section*{Acknowledgments}
 A.~Kuzmin wants to thank the Alberta Ingenuity Fund for their financial support.
+\section{Appendix A}
+{\color{red} Michal, you can add here binary Shan-Chen model. You have more information on it than me.}
+\section{Appendix B}
+\subsection{Binary liquid multiphase model}
+In this section we describe the binary liquid model. Binary model is based on
+the free energy model \cite{swift,landau}:
+\begin{equation}
+\mathfrak{F}=\int{J \mathrm{d}V}=\int{\left(c_s^2\rho\ln\rho+\frac{A}{2}\phi^2+\frac{B}{4}\phi^4 + \frac{k}{2}(\nabla \phi)^2 \right)\mathrm{d}V},
+\end{equation}
+where coefficients $A$ and $B$ are responsible for the phase separation,
+coefficient $k$ is responsible for the surface tension between phases and
+$\phi$ is the order parameter. Different phases are corresponding to
+extreme values of $\phi$ as $-1$ and $1$.
+The lattice Boltzmann model for the binary free-energy model is defined
+through two distribution sets:
+\begin{equation}
+\begin{aligned}
+&f_i^{eq}=w_i \rho \biggl(1+\frac{u_{\alpha}c_{i\alpha}}{c_s^2}+\frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr), i=0\div8\\
+&g_i^{eq}=w_i(\Gamma \mu + \frac{\phi c_{i\alpha} u_{i\alpha}}{c_s^2}+\phi^m \frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}), i\neq0 \\
+&g_0^{eq}=\phi-\sum_{i\neq0}{g_i^{eq}}\quad,
+\end{aligned}
+\end{equation}
+where $\Gamma$ is the mobility parameter, chemical potential
+$\mu=-A\phi+A\phi^3-k\Delta\phi$, $k$ is related to the surface
+tension. The macroscopic parameters are calculated as:
+\begin{equation}
+\begin{aligned}
+\rho=\sum_i{f_i}\\
+\rho u_{\alpha}=\sum_i{f_i c_{i\alpha}}\\
+\phi=\sum_i{g_i}
+\end{aligned}
+\end{equation}
+The equilibrium distribution functions lead to the macroscopic equations
+{\color{red} Give citation here}:
+\begin{equation}
+\begin{aligned}
+&\partial_t \rho+ \partial_{\alpha} \rho u_{\alpha}=0\\
+&\rho\left(\partial_t+u_{\beta}\partial_{\beta}\right) u_{\alpha}=\\
+&-\partial_{\alpha}P_{\alpha \beta} + \nu\partial_{\beta}\left(\partial_{\alpha}u_{\beta}+\partial_{\beta} u_{\alpha} + \frac{1}{3}\partial_{\gamma} u_{\gamma} \delta_{\alpha\beta}\right)\\
+&\partial_t \phi + \partial_{\alpha} \phi u_{\alpha}=D\Delta \mu,
+\end{aligned}
+\label{binary:fluid:system}
+\end{equation}
+with the bulk pressure $p_0=\rho c_s^2-\frac{B}{2}\phi^2+\frac{3}{4}B \phi^2$.
+
+{\color{red} Michal, need your help here. Which parameters have you used for simulation. Please check above.}
+We take equilibrium distribution function for the binary-liquid gas model. In general, it can be presented in the following form:
 
 %%%% Bibliography  %%%%%%%%%%
 \bibliographystyle{plain}

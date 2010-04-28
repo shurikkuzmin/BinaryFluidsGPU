@@ -203,10 +203,14 @@ F_i=w_i\biggl(1-\frac{\omega}{2}\biggr)\biggl(3 (c_{i\alpha}-u_{\alpha}) + 9 (c_
 \end{equation}
 The Shan-Chen model is one-component multiphase model. The multicomponent modification is presented in the Appendix~\ref{sec:binary_shan_chen}.
 \subsection{Free-energy model}
-The free-energy or pressure model \cite{swift} allows the incorporation of the any equation of state to the lattice Boltzmann equation. In comparison with the Shan-Chen model, the free-energy model is simulated through the special choice of the equilibrium distribution function. The lattice Boltzmann scheme is implemented in a standard form (\ref{standard:implementation}), but the equilibrium function is defined as:
-\begin{equation}
+The free-energy or pressure model \cite{swift} allows the incorporation of the
+any equation of state to the lattice Boltzmann equation. In comparison with the
+Shan-Chen model, the free-energy model is simulated through the special choice
+of the equilibrium distribution function. The lattice Boltzmann scheme is
+implemented in a standard form (\ref{standard:implementation}), but the
+equilibrium function is defined as: \begin{equation}
 \begin{aligned}
-f_i^{eq}=&w_i \biggl(p_0(\rho)-3 k\rho\Delta\rho+\rho \frac{c_{i\alpha}u_{\alpha}}{3}+\rho \frac{9 Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2}\biggr)\\
+f_i^{eq}=&w_i \biggl(p_0(\rho)-3 k\rho\Delta\rho+\rho \frac{c_{i\alpha}u_{\alpha}}{c_s^2}+\rho \frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr)\\
 &+k (w_{ixx} \partial_x \rho \partial_x \rho + w_{ixy} \partial_x \rho \partial_y \rho + w_{iyy} \partial_y \rho \partial_y \rho),
 \end{aligned}
 \end{equation}

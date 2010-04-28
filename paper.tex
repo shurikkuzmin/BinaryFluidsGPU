@@ -163,7 +163,7 @@ where $F_i$ is the external force population. The equilibrium function populatio
 f_i^{eq}=w_i \rho \biggl(1+\frac{c_{i\alpha}u_{\alpha}}{c_s^2}+\frac{Q_{i\alpha\beta}u_{\alpha}u_{\beta}}{2 c_s^4}\biggr),
 \end{equation}
 where for D2Q9
-$w_i=\{\dfrac{4}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{36},\dfrac{1}{36},\dfrac{1}{36},\dfrac{1}{36}\}$
+$w_i=\left\{\dfrac{4}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{9},\dfrac{1}{36},\dfrac{1}{36},\dfrac{1}{36},\dfrac{1}{36}\right\}$
 and $Q_{i\alpha\beta}=c_{i\alpha} c_{i\beta} - c_s^2 \delta_{\alpha\beta}$ with the sound speed parameter $c_s^2=\dfrac{1}{3}$. The macroscopic variables are restored on
 every time step through the probability function population:
 \begin{equation*}
@@ -210,7 +210,9 @@ f_i^{eq}=&w_i \biggl(p_0(\rho)-3 k\rho\Delta\rho+\rho \frac{c_{i\alpha}u_{\alpha
 &+k (w_{ixx} \partial_x \rho \partial_x \rho + w_{ixy} \partial_x \rho \partial_y \rho + w_{iyy} \partial_y \rho \partial_y \rho),
 \end{aligned}
 \end{equation}
-where $w_{ixx}=\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24}\}$, $w_{iyy}=\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24}\}$ and $w_{ixy}=\{0,0,0,0,\dfrac{1}{4},\dfrac{1}{4},-\dfrac{1}{4},-\dfrac{1}{4}\}$. The laplacian and the gradient are taken by the numerical stencils:
+where $w_{ixx}=\left\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24}\right\}$,
+$w_{iyy}=\left\{\dfrac{1}{3},\dfrac{1}{3},-\dfrac{1}{6},-\dfrac{1}{6},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24},-\dfrac{1}{24}\right\}$
+and $w_{ixy}=\left\{0,0,0,0,\dfrac{1}{4},\dfrac{1}{4},-\dfrac{1}{4},-\dfrac{1}{4}\right\}$. The laplacian and the gradient are taken by the numerical stencils:
 \begin{equation}
 \Delta=\frac{1}{6}
 \begin{pmatrix}

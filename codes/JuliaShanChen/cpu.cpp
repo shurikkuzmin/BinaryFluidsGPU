@@ -72,7 +72,28 @@ int main(int argc, char** argv)
 	int i;
 	float dense,v1,v2;
 	
-	
+	int cx[]={0,1,0,-1,0,1,-1,-1,1};
+	int cy[]={0,0,1,0,-1,1,1,-1,-1};
+	float weights[]={4.0/9.0,1.0/9.0,1.0/9.0,1.0/9.0,1.0/9.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
+//	float wxx[]={0.0,1.0/3.0,1.0/3.0,-1.0/6.0,-1.0/6.0,-1.0/24.0,-1.0/24.0,-1.0/24.0,-1.0/24.0};
+//	float wyy[]={0.0,-1.0/6.0,-1.0/6.0,1.0/3.0,1.0/3.0,-1.0/24.0,-1.0/24.0,-1.0/24.0,-1.0/24.0};
+//	float wxy[]={0.0,0.0,0.0,0.0,0.0,1.0/4.0,1.0/4.0,-1.0/4.0,-1.0/4.0};
+
+	float wxx[] = {0.0, 1.0/3.0, -1.0/6.0, 1.0/3.0, -1.0/6.0, -1.0/24.0, -1.0/24.0, -1.0/24.0, -1.0/24.0};
+	float wyy[] = {0.0, -1.0/6.0, 1.0/3.0, -1.0/6.0, 1.0/3.0, -1.0/24.0, -1.0/24.0, -1.0/24.0, -1.0/24.0};
+	float wxy[] = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0/4.0, -1.0/4.0, 1.0/4.0, -1.0/4.0};
+
+	float gradstencilx[9]={0.0,4.0/12.0,0.0,-4.0/12.0,0.0,
+			          1.0/12.0,-1.0/12.0,-1.0/12.0,1.0/12.0};
+
+	float gradstencily[9]={0.0,0.0,4.0/12.0,0.0,-4.0/12.0,
+			          1.0/12.0,1.0/12.0,-1.0/12.0,-1.0/12.0};
+
+
+	float laplacestencil[9]={-20.0/6.0,4.0/6.0,4.0/6.0,4.0/6.0,4.0/6.0,
+					   1.0/6.0,1.0/6.0,1.0/6.0,1.0/6.0};
+
+
 	
 	for (i=0; i<nx*ny; i++)
 	{
@@ -81,7 +102,7 @@ int main(int argc, char** argv)
 		else 
 			rho[i]=rhog;
 	}
-	
+/*	
 	for (int j=0;j<int(width);j++)
 	{
 		for(i=0;i<nx;i++)
@@ -90,7 +111,7 @@ int main(int argc, char** argv)
 			rho[j*nx+i]=rhog+(rhol-rhog)*exp(-(j-width+1)*(j-width+1)/(2.0*sigma*sigma));
 		}
 	}
-	
+*/	
 	
 	for (i=0; i<nx*ny; i++)
 	{	
@@ -106,6 +127,34 @@ int main(int argc, char** argv)
 		dense=rho[i];
 		v1=v2=u1[i] = u2[i] = 0.0;
 		float usq = v1*v1 + v2*v2;
+
+		int iY=i / nx; 
+		int iX=i % nx; 			
+
+		lapl[i]=0.0;
+		gradx[i]=0.0;
+		grady[i]=0.0;
+		for(int k=0;k<9;k++)
+		{
+			int iX2=(iX+cx[k]+nx) % nx; 
+			int iY2=(iY+cy[k]+ny) % ny;
+			lapl[i]+=laplacestencil[k]*rho[nx*iY2+iX2];
+			gradx[i]+=gradstencilx[k]*rho[nx*iY2+iX2];
+			grady[i]+=gradstencily[k]*rho[nx*iY2+iX2];
+		}
+	
+		float sum=0.0;
+		for(int k=1;k<9;k++)
+		{
+			feq[k]=	weights[k]*(dense+g*(1.0-exp(-dense))*(1.0-exp(-dense))/2.0-3.0*surf*dense*lapl[i]
+								+3.0*dense*(cx[k]*v1+cy[k]*v2)
+								+4.5*dense*((cx[k]*cx[k]-1.0/3.0)*v1*v1+2.0*cx[k]*cy[k]*v1*v2+(cy[k]*cy[k]-1.0/3.0)*v2*v2))
+					+surf*(wxx[k]*gradx[i]*gradx[i]+wyy[k]*grady[i]*grady[i]+wxy[k]*gradx[i]*grady[i]);
+			sum+=feq[k];
+		}
+		feq[0] = dense-sum;
+
+/*
 		feq[0] = 4.0/9.0 * dense * (1.0 - 1.5 * usq); 
 		feq[1] = 1.0/9.0 * dense * (1.0 + 3*v1 + 4.5*v1*v1 - 1.5*usq); 
 		feq[2] = 1.0/9.0 * dense * (1.0 + 3*v2 + 4.5*v2*v2 - 1.5*usq); 
@@ -114,7 +163,8 @@ int main(int argc, char** argv)
 		feq[5] = 1.0/36.0 * dense * (1.0 + 3*(v1 + v2) + 4.5*(v1 + v2)*(v1 + v2) - 1.5*usq); 
 		feq[6] = 1.0/36.0 * dense * (1.0 + 3*(-v1 + v2) + 4.5*(-v1 + v2)*(-v1 + v2) - 1.5*usq);
 		feq[7] = 1.0/36.0 * dense * (1.0 + 3*(-v1 - v2) + 4.5*(v1 + v2)*(v1 + v2) - 1.5*usq); 
-		feq[8] = 1.0/36.0 * dense * (1.0 + 3*(v1 - v2) + 4.5*(v1 - v2)*(v1 -v2) - 1.5*usq); 
+		feq[8] = 1.0/36.0 * dense * (1.0 + 3*(v1 - v2) + 4.5*(v1 - v2)*(v1 -v2) - 1.5*usq); */
+
 		for (int k=0; k<npop; k++) {
 			f[9*i+k]=feq[k];
 			f2[9*i+k]=feq[k];
@@ -124,22 +174,6 @@ int main(int argc, char** argv)
 	time_t start, finish;
 	start = time(NULL);
 	
-	int cx[]={0,1,0,-1,0,1,-1,-1,1};
-	int cy[]={0,0,1,0,-1,1,1,-1,-1};
-	float weights[]={4.0/9.0,1.0/9.0,1.0/9.0,1.0/9.0,1.0/9.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
-	float wxx[]={0.0,1.0/3.0,1.0/3.0,-1.0/6.0,-1.0/6.0,-1.0/24.0,-1.0/24.0,-1.0/24.0,-1.0/24.0};
-	float wyy[]={0.0,-1.0/6.0,-1.0/6.0,1.0/3.0,1.0/3.0,-1.0/24.0,-1.0/24.0,-1.0/24.0,-1.0/24.0};
-	float wxy[]={0.0,0.0,0.0,0.0,0.0,1.0/4.0,1.0/4.0,-1.0/4.0,-1.0/4.0};
-	float gradstencilx[9]={0.0,4.0/12.0,0.0,-4.0/12.0,0.0,
-			          1.0/12.0,-1.0/12.0,-1.0/12.0,1.0/12.0};
-
-	float gradstencily[9]={0.0,0.0,4.0/12.0,0.0,-4.0/12.0,
-			          1.0/12.0,1.0/12.0,-1.0/12.0,-1.0/12.0};
-
-
-	float laplacestencil[9]={-20.0/6.0,4.0/6.0,4.0/6.0,4.0/6.0,4.0/6.0,
-					   1.0/6.0,1.0/6.0,1.0/6.0,1.0/6.0};
-
 	
 	for (int timecounter=0; timecounter<2000;timecounter++) 
 	{

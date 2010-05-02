@@ -195,6 +195,7 @@ P_{\alpha\beta}=\biggl(c_s^2\rho+\frac{G}{6}\psi^2+\frac{G}{36}%
 where the equation of states is changed from original $P=c_s^2 \rho$ \cite{Succi-book}
 to the van-der-Waals type equation of state:
 \begin{equation}
+\label{shan:chen:equation:state}
 P=c_s^2 \rho +\frac{G}{6} \psi(\rho)^2.
 \end{equation}
 The lattice Boltzmann simulation for the Shan-Chen model is implemented through the standard implementation (\ref{standard:implementation}). In the presence of the external force the macroscopic velocity is changed as $\rho u_{\alpha}=\sum_i{f_i c_{i\alpha}}+\dfrac{F_{\alpha}}{2}$. The force population is defined as \cite{guo}:
@@ -279,7 +280,26 @@ the facts from the previous section.
 
 \section{Results}
 \label{sec:benchmark}
+A few benchmarks were made for comparison purposes between the Shan-Chen and the free-energy model:
+\begin{itemize}
+\item The first one compares accuracy and performance of calculations of the plane interface between gas and liquid phases.  We included the Shan-Chen equation of state (\ref{shan:chen:equation:state}) to the free-energy model for the purpose of comparison. The domain {\color{red} Michal, please add the domain size} was initialized with the equilibrium densities calculated from Maxwellian area rule for $G=-5.5$. Half domain was initialized with the liquid density $\rho_l=...$, the another half domain was initialized with the gas density $\rho_g=...$. While the prescription of $G$ is enough for the Shan-Chen model to run simulations, the free-energy model operates with the additional parameter $k$ controlling the surface tension. We take values of $k$ {\color{red} Michal, please put a value here.} to guarantee the closeness of calculated profiles to the Shan-Chen model profiles \cite{sbragaglia-contact, kuzmin-thesis}. 
 
+While the profiles are not compared since the Shan-Chen model has the density dependent surface tension coefficient \cite{shan-chen-free}, the models are compared in terms of accuracy to reproduce the bulk densities and the computer performance. The following outlines the findings: {\color{red} Michal, please add the benchmarks here}.
+
+\item The binary-liquid models can be compared for the two-phase Poiseuille flow. The flow is driven by pressure gradient implemented as the force, $\frac{\mathrm{d}P}{\mathrm{d}x}$. The walls are implemented as a half-way bounce-back. It is known that BGK fails to reproduce the exact location of the wall. Instead of BGK we used the D2Q9 MRT model \cite{dhumieres-first,dhumieres}. While BGK operates with one parameter $\tau$, the MRT model operates with the number of eigenvalues, i.e. $s_{\rho},s_e,s_{\epsilon},s_{j_x},s_{q_x},s_{j_y},s_{q_y},s_{p_{xx}},s_{p_{xy}}$, giving better stability and proper the Navier-Stokes equation restoration by varying the free model eigenvalues \cite{dhumieres}.  For example for the half-way bounce-back walls representation for the Poiseuille flow the location of the wall is located exactly in the middle between nodes if the energy fluxes eigenvalues are defined as \cite{ginzburg-multireflection}:
+\begin{equation}
+\label{poiseuille:eigenvalues}
+s_{q_{x,y}}=8\frac{2-\omega}{8-\omega},
+\end{equation}
+where $\omega$ states for the $s_{p_{xx}}$ and $s_{p_{xy}}$ related to the bulk and kinematic viscosities. 
+
+The domain {\color{red} Please put size here} is utilized with the two different densities {\color{red} What are they?}. The nodes with $y=0$ and $y=Ny$ represent the half-way bounce-back nodes. The MRT energy-flux eigenvalues are defined through the equation \ref{poiseuille:eigenvalues}, while viscosity related eigenvalues are defined as $s_{p_{xx}}=s_{p_{xy}}=\omega=1$. The velocity profile should obey the following formulae \cite{ginzburg-discontinious}:
+\begin{equation}
+\text{Need to calculate profiles. Michal, if you already have it - please add.}
+\end{equation}
+
+We compare the models in terms of the accuracy for velocity profiles for different density and viscosity ratios and the calculation performance. The following summarizes our findings: {\color{red} Michal, please add here benchmarks}.   
+\end{itemize}
 \section{Conclusion}
 %%%% Acknowledgments %%%%%%%%
 \section*{Acknowledgments}

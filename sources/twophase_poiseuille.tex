@@ -1,0 +1,60 @@
+\documentclass[a4paper]{report}
+\usepackage{amsmath}
+\usepackage{fullpage}
+\begin{document}
+
+We are solving the Navier-Stokes equations in the 2D Cartesian coordinate system, assuming the system is driven by an
+external acceleration field $g$ (in the Y direction):
+\begin{align}
+	\rho_i \left( \frac{\partial v_{ix}}{\partial t} + v_{ix} \frac{\partial v_{ix}}{\partial x} + v_{iy} \frac{\partial v_{ix}}{\partial y} \right) &= \mu_i
+		\left( \frac{\partial^2 v_{ix}}{\partial x ^2 } + \frac{\partial^2 v_{ix}}{\partial y^2} \right) \\
+	\rho_i \left( \frac{\partial v_{iy}}{\partial t} + v_{ix} \frac{\partial v_{iy}}{\partial x} + v_{iy} \frac{\partial v_{iy}}{\partial y} \right) &= \mu_i
+		\left( \frac{\partial^2 v_{iy}}{\partial x ^2 } + \frac{\partial^2 v_{iy}}{\partial y^2} \right) + g \rho_i
+\end{align}
+We assume the flow to be stationary, so the time derivatives are 0.  We also take $v_{ix} = 0$, so the first equation
+does not give us any further information about the system, while the second equation reduces to:
+\begin{equation}
+	- \frac{g \rho_i}{\mu_i} = \frac{\partial^2 v_{iy}}{\partial x^2}
+\end{equation}
+if we also asuume $\partial v / \partial y = 0$ (the flow is fully developed).  The general solution is:
+\begin{equation}
+	v_{iy} = \frac{g \rho_i}{2 \mu_i} x^2 + C_i x + D_i
+	\label{eq:gensol}
+\end{equation}
+If we assume the phase interface to be located at $x = 0$, the continuity of $v$ requires $D_1 = D_2 = D$ and continuity of $\mu_i \partial_x v_i$ requires $\mu_1 C_1 = \mu_2 C_2$.
+
+The flow happen in a channel of radius $R$, so no-slip boundary conditions are enforced at $x = -R$ and $x = R$:
+\begin{align}
+	v_{1y}(-R) &= \frac{g \rho_1}{2 \mu_1} R^2 - C_1 R + D = 0\\
+	v_{2y}(R) &= \frac{g \rho_2}{2 \mu_2} R^2 + \frac{\mu_1}{\mu_2} C_1 R + D = 0
+	\label{eq:vel}
+\end{align}
+Multiplying the first equation by $\mu_1 / \mu_2$ and adding the result to the second equation, we get:
+\begin{equation}
+	- \frac{g}{2 \mu_2} (\rho_1 + \rho_2) R^2 = D \left( 1 + \frac{\mu_1}{\mu_2} \right)
+\end{equation}
+and:
+\begin{equation}
+	D = -\frac{g (\rho_1 + \rho_2)}{ 2 (\mu_1 + \mu_2)} R^2
+\end{equation}
+Inserting that into Eq.~\ref{eq:vel}:
+\begin{equation}
+	R \left(\frac{g \rho_1}{2 \mu_1} -\frac{g (\rho_1 + \rho_2)}{ 2 (\mu_1 + \mu_2)} \right) = C_1
+\end{equation}
+which can be simplified to:
+\begin{equation}
+	C_1 = \frac{g R}{2} \frac{\mu_2 \rho_1 - \mu_1 \rho_2 }{\mu_1 (\mu_1 + \mu_2)}
+\end{equation}
+
+If we take the viscosities to be the same $\mu_1 = \mu_2 = \mu$, we get:
+\begin{align}
+	D &= -\frac{g (\rho_1 + \rho_2)}{4 \mu} R^2 \\
+	C_2 = C_1 &= \frac{g (\rho_1 - \rho_2)}{4 \mu} R
+\end{align}
+The velocity profiles then read:
+\begin{align}
+	v_{1y}(x) &= \frac{g}{4 \mu} \left(2 x^2 - (\rho_1 - \rho_2) R x - (\rho_1 + \rho_2) R^2\right),\qquad x < 0\\
+	v_{2y}(x) &= \frac{g}{4 \mu} \left(2 x^2 + (\rho_1 - \rho_2) R x - (\rho_1 + \rho_2) R^2\right),\qquad x > 0 
+\end{align}
+
+\end{document}

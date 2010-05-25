@@ -4,17 +4,17 @@
 \begin{document}
 
 We are solving the Navier-Stokes equations in the 2D Cartesian coordinate system, assuming the system is driven by an
-external acceleration field $g$ (in the Y direction):
+external acceleration field $-g$ (in the Y direction):
 \begin{align}
 	\rho_i \left( \frac{\partial v_{ix}}{\partial t} + v_{ix} \frac{\partial v_{ix}}{\partial x} + v_{iy} \frac{\partial v_{ix}}{\partial y} \right) &= \mu_i
 		\left( \frac{\partial^2 v_{ix}}{\partial x ^2 } + \frac{\partial^2 v_{ix}}{\partial y^2} \right) \\
 	\rho_i \left( \frac{\partial v_{iy}}{\partial t} + v_{ix} \frac{\partial v_{iy}}{\partial x} + v_{iy} \frac{\partial v_{iy}}{\partial y} \right) &= \mu_i
-		\left( \frac{\partial^2 v_{iy}}{\partial x ^2 } + \frac{\partial^2 v_{iy}}{\partial y^2} \right) + g \rho_i
+		\left( \frac{\partial^2 v_{iy}}{\partial x ^2 } + \frac{\partial^2 v_{iy}}{\partial y^2} \right) - g \rho_i
 \end{align}
 We assume the flow to be stationary, so the time derivatives are 0.  We also take $v_{ix} = 0$, so the first equation
 does not give us any further information about the system, while the second equation reduces to:
 \begin{equation}
-	- \frac{g \rho_i}{\mu_i} = \frac{\partial^2 v_{iy}}{\partial x^2}
+	\frac{g \rho_i}{\mu_i} = \frac{\partial^2 v_{iy}}{\partial x^2}
 \end{equation}
 if we also asuume $\partial v / \partial y = 0$ (the flow is fully developed).  The general solution is:
 \begin{equation}
